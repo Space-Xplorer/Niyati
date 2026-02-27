@@ -42,7 +42,7 @@ Project Niyati is a comprehensive fraud detection system designed as a "Shadow M
 
 ### Backend
 - **Python 3.9+** with Flask/FastAPI
-- **PostgreSQL** for relational data storage
+- **SQLite** for relational data storage (file-based)
 - **Neo4j** for knowledge graph
 - **LangGraph** for multi-agent orchestration
 - **Explainable Boosting Machine (EBM)** for ML predictions
@@ -60,9 +60,8 @@ Project Niyati is a comprehensive fraud detection system designed as a "Shadow M
 
 - Python 3.9+
 - Node.js 18+
-- PostgreSQL 14+
-- Neo4j 5+
-- Docker (optional, for containerized setup)
+- Neo4j 5+ (or use Docker)
+- Docker (optional, for Neo4j container)
 
 ### Installation
 
@@ -87,13 +86,13 @@ cp .env.example .env
 ```
 
 Required environment variables:
-- `DATABASE_URL` - PostgreSQL connection string
+- `DATABASE_URL` - SQLite database file path (default: sqlite:///niyati.db)
 - `NEO4J_URI` - Neo4j bolt connection URI
 - `NEO4J_USER` - Neo4j username
 - `NEO4J_PASSWORD` - Neo4j password
 - `LLM_PROVIDER` - Either "groq" or "openai"
 - `LLM_API_KEY` - API key for your LLM provider
-- `JWT_SECRET_KEY` - Secret key for JWT token generation
+- `JWT_SECRET` - Secret key for JWT token generation
 
 4. **Initialize the database**
 ```bash
@@ -132,17 +131,18 @@ cd frontend
 npm run dev
 ```
 
-#### Option 2: Docker Compose (Recommended)
+#### Option 2: Docker Compose
 
 ```bash
 docker-compose up
 ```
 
 This will start:
-- PostgreSQL on port 5432
 - Neo4j on port 7687 (Bolt) and 7474 (Browser)
 - Backend API on port 8000
 - Frontend on port 3000
+
+Note: SQLite database is file-based and doesn't require a container.
 
 ### Access the Application
 

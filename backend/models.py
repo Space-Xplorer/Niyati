@@ -1,6 +1,5 @@
 from database import db
 from datetime import datetime
-from sqlalchemy.dialects.postgresql import ARRAY, JSONB
 
 class User(db.Model):
     __tablename__ = 'users'

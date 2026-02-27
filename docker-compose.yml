@@ -1,26 +1,10 @@
 # Docker Compose configuration for Project Niyati
-# Provides PostgreSQL and Neo4j services for local development
+# Provides Neo4j service for local development
+# SQLite is used for relational data (file-based, no container needed)
 
 version: '3.8'
 
 services:
-  postgres:
-    image: postgres:15-alpine
-    container_name: niyati-postgres
-    environment:
-      POSTGRES_USER: niyati_user
-      POSTGRES_PASSWORD: niyati_password
-      POSTGRES_DB: niyati_db
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U niyati_user -d niyati_db"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
   neo4j:
     image: neo4j:5.15-community
     container_name: niyati-neo4j
@@ -42,6 +26,5 @@ services:
       retries: 5
 
 volumes:
-  postgres_data:
   neo4j_data:
   neo4j_logs:

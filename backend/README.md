@@ -43,7 +43,7 @@ The backend uses LangGraph to orchestrate five specialized agents:
 ### Technology Stack
 
 - **FastAPI** - Modern async web framework
-- **SQLAlchemy** - ORM for PostgreSQL
+- **SQLAlchemy** - ORM for SQLite
 - **Neo4j Python Driver** - Graph database client
 - **LangGraph** - Multi-agent orchestration
 - **InterpretML** - Explainable Boosting Machine
@@ -57,8 +57,7 @@ The backend uses LangGraph to orchestrate five specialized agents:
 ### Prerequisites
 
 - Python 3.9 or higher
-- PostgreSQL 14+
-- Neo4j 5+
+- Neo4j 5+ (or use Docker)
 - pip or conda
 
 ### Setup
@@ -79,8 +78,8 @@ pip install -r requirements.txt
 Create a `.env` file in the `backend/` directory:
 
 ```env
-# Database Configuration
-DATABASE_URL=postgresql://user:password@localhost:5432/niyati
+# SQLite Configuration (file-based database)
+DATABASE_URL=sqlite:///niyati.db
 
 # Neo4j Configuration
 NEO4J_URI=bolt://localhost:7687
@@ -92,7 +91,7 @@ LLM_PROVIDER=groq  # or "openai"
 LLM_API_KEY=your_api_key_here
 
 # JWT Configuration
-JWT_SECRET_KEY=your-super-secret-key-change-in-production
+JWT_SECRET=your-super-secret-key-change-in-production
 
 # Optional: Email Configuration (for HIGH_RISK notifications)
 SMTP_HOST=smtp.gmail.com
@@ -534,7 +533,9 @@ Simple health check endpoint.
 
 ## Database Models
 
-### PostgreSQL Tables
+### SQLite Tables
+
+All tables are stored in a single `niyati.db` file in the backend directory.
 
 **users**
 - `id` (INTEGER, PK)
@@ -688,12 +689,14 @@ CREATE CONSTRAINT invoice_irn IF NOT EXISTS FOR (i:Invoice) REQUIRE i.irn IS UNI
 CREATE INDEX taxpayer_risk IF NOT EXISTS FOR (t:Taxpayer) ON (t.risk_level);
 ```
 
-### PostgreSQL Indexing
+### SQLite Indexing
+
+SQLite automatically creates indexes for PRIMARY KEY and UNIQUE constraints. For additional performance:
 
 ```sql
-CREATE INDEX idx_risk_predictions_gstin ON risk_predictions(gstin);
-CREATE INDEX idx_fraud_patterns_type ON fraud_patterns(pattern_type);
-CREATE INDEX idx_engineered_features_gstin ON engineered_features(gstin);
+CREATE INDEX IF NOT EXISTS idx_risk_predictions_gstin ON risk_predictions(gstin);
+CREATE INDEX IF NOT EXISTS idx_fraud_patterns_type ON fraud_patterns(pattern_type);
+CREATE INDEX IF NOT EXISTS idx_engineered_features_gstin ON engineered_features(gstin);
 ```
 
 ### Batch Processing
@@ -720,11 +723,11 @@ The Graph Architect uses UNWIND batching with batch size of 500 records for opti
 ### Database Connection Errors
 
 ```bash
-# Test PostgreSQL connection
-psql -h localhost -U user -d niyati
-
 # Test Neo4j connection
 cypher-shell -a bolt://localhost:7687 -u neo4j -p password
+
+# Check SQLite database
+sqlite3 niyati.db ".tables"
 ```
 
 ### LLM API Errors
