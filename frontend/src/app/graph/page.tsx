@@ -4,47 +4,9 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import dynamic from 'next/dynamic';
 
-// Import THREE.js and attach to window before react-force-graph loads
-if (typeof window !== 'undefined') {
-  import('three').then((THREE) => {
-    // Create a mutable proxy of THREE to allow A-Frame components to extend it
-    const mutableTHREE = { ...THREE };
-    
-    // Copy all properties and make them configurable
-    Object.keys(THREE).forEach(key => {
-      try {
-        Object.defineProperty(mutableTHREE, key, {
-          value: (THREE as any)[key],
-          writable: true,
-          enumerable: true,
-          configurable: true
-        });
-      } catch (e) {
-        // Skip if property can't be defined
-      }
-    });
-    
-    (window as any).THREE = mutableTHREE;
-  }).catch(err => {
-    console.error('Failed to load THREE.js:', err);
-  });
-}
-
-// Dynamically import ForceGraph2D to avoid SSR issues
+// Dynamically import ForceGraph2D (2D-only package, no VR dependencies)
 const ForceGraph2D = dynamic(
-  () => {
-    // Ensure THREE.js is loaded before importing react-force-graph
-    return new Promise((resolve) => {
-      const checkTHREE = () => {
-        if ((window as any).THREE) {
-          import('react-force-graph').then(mod => resolve(mod.ForceGraph2D as any));
-        } else {
-          setTimeout(checkTHREE, 100);
-        }
-      };
-      checkTHREE();
-    });
-  },
+  () => import('react-force-graph-2d'),
   { 
     ssr: false,
     loading: () => (
@@ -85,63 +47,6 @@ export default function GraphPage() {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const graphRef = useRef<any>(null);
 
-  // Setup AFRAME stub and error suppression
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      // Create AFRAME stub
-      (window as any).AFRAME = {
-        registerComponent: () => {},
-        components: {},
-        systems: {},
-        registerSystem: () => {},
-        registerGeometry: () => {},
-        registerPrimitive: () => {},
-        registerShader: () => {},
-        utils: {
-          device: {
-            checkHeadsetConnected: () => false,
-            isMobile: () => false
-          }
-        }
-      };
-
-      // Suppress AFRAME and VR-related errors
-      const originalError = console.error;
-      console.error = (...args: any[]) => {
-        const errorString = args.join(' ');
-        if (
-          errorString.includes('AFRAME') ||
-          errorString.includes('checkpoint-controls') ||
-          errorString.includes('aframe') ||
-          errorString.includes('ColladaLoader') ||
-          errorString.includes('collada-model') ||
-          errorString.includes('object is not extensible') ||
-          errorString.includes('3d-force-graph-vr')
-        ) {
-          return;
-        }
-        originalError.apply(console, args);
-      };
-
-      // Also suppress promise rejection errors for VR components
-      const originalRejection = window.onunhandledrejection;
-      window.onunhandledrejection = (event: PromiseRejectionEvent) => {
-        const errorString = event.reason?.toString() || '';
-        if (
-          errorString.includes('ColladaLoader') ||
-          errorString.includes('object is not extensible') ||
-          errorString.includes('3d-force-graph-vr')
-        ) {
-          event.preventDefault();
-          return;
-        }
-        if (originalRejection) {
-          originalRejection.call(window, event);
-        }
-      };
-    }
-  }, []);
-
   useEffect(() => {
     const fetchGraphData = async () => {
       if (!token) return;
@@ -165,6 +70,7 @@ export default function GraphPage() {
         }
 
         const result = await response.json();
+        console.log(`Graph data loaded: ${result.count?.nodes || result.nodes?.length || 0} nodes, ${result.count?.edges || result.edges?.length || 0} edges from ${result.source || 'unknown'}`);
         setData(result);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An error occurred');
