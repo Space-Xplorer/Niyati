@@ -5,7 +5,7 @@ Seed test data for Project Niyati
 This script creates sample data for testing the dashboard without uploading CSV files.
 """
 
-from app import app
+from main import flask_app as app
 from database import db
 from models import (
     EntityMaster, RiskPrediction, FraudPattern, 

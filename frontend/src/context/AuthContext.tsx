@@ -8,6 +8,7 @@ interface User {
     email: string;
     // backend uses strings like 'Admin' or 'Business_Owner', keep open
     role?: string;
+    gstin?: string;
 }
 
 interface AuthContextType {
@@ -35,7 +36,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             try {
                 const payload = JSON.parse(atob(storedToken.split('.')[1]));
                 const isExpired = payload.exp * 1000 < Date.now();
-                
+
                 if (isExpired) {
                     // Token expired, clear storage and redirect to login
                     localStorage.removeItem('token');
@@ -45,7 +46,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                     }
                     return;
                 }
-                
+
                 setToken(storedToken);
                 setUser(JSON.parse(storedUser));
                 // Only redirect from login/signup pages, allow landing page access

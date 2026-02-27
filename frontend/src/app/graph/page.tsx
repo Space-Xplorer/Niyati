@@ -7,7 +7,7 @@ import dynamic from 'next/dynamic';
 // Dynamically import ForceGraph2D (2D-only package, no VR dependencies)
 const ForceGraph2D = dynamic(
   () => import('react-force-graph').then(mod => mod.ForceGraph2D),
-  { 
+  {
     ssr: false,
     loading: () => (
       <div className="flex items-center justify-center h-full">
@@ -87,7 +87,7 @@ export default function GraphPage() {
     if (node.label === 'Invoice' || node.label === 'EwayBill') {
       return '#9CA3AF'; // Gray for invoices and eway bills
     }
-    
+
     if (node.label === 'Taxpayer') {
       switch (node.risk_level) {
         case 'HIGH_RISK':
@@ -100,7 +100,7 @@ export default function GraphPage() {
           return '#6B7280'; // Default gray
       }
     }
-    
+
     return '#6B7280';
   }, []);
 
@@ -153,10 +153,10 @@ export default function GraphPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-[#f7faf9] flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading graph...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#005b52] mx-auto"></div>
+          <p className="mt-4 text-[#005b52]/70">Loading graph...</p>
         </div>
       </div>
     );
@@ -164,9 +164,9 @@ export default function GraphPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-[#f7faf9] flex items-center justify-center">
         <div className="text-center">
-          <p className="text-red-600">Error: {error}</p>
+          <p className="text-red-500">Error: {error}</p>
         </div>
       </div>
     );
@@ -174,41 +174,41 @@ export default function GraphPage() {
 
   if (!data || data.nodes.length === 0) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-[#f7faf9] flex items-center justify-center">
         <div className="text-center">
-          <p className="text-gray-600">No graph data available</p>
+          <p className="text-[#005b52]/70">No graph data available</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[#f7faf9]">
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-6 flex justify-between items-start">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Transaction Graph</h1>
-            <p className="text-gray-600 mt-2">
+            <h1 className="text-3xl font-bold text-[#04221f]">Transaction Graph</h1>
+            <p className="text-[#005b52]/70 mt-2">
               {user?.role === 'admin' ? 'Global View' : `GSTIN: ${user?.email}`}
             </p>
           </div>
           <div className="flex gap-2">
             <button
               onClick={() => window.location.href = '/'}
-              className="text-sm bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded transition"
+              className="text-sm bg-white border border-[#005b52]/20 hover:bg-[#005b52]/5 text-[#04221f] px-4 py-2 rounded-lg font-medium transition"
             >
               Home
             </button>
             <button
               onClick={() => window.location.href = '/dashboard'}
-              className="text-sm bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded transition"
+              className="text-sm bg-[#dbf226] hover:bg-[#c4da1e] border border-[#04221f]/10 text-[#04221f] px-4 py-2 rounded-lg font-medium shadow-md shadow-black/5 transition"
             >
               Dashboard
             </button>
             <button
               onClick={logout}
-              className="text-sm bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded transition"
+              className="text-sm bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-medium shadow-md transition"
             >
               Logout
             </button>
@@ -216,34 +216,34 @@ export default function GraphPage() {
         </div>
 
         {/* Legend */}
-        <div className="bg-white rounded-lg shadow p-4 mb-6">
-          <h2 className="text-sm font-semibold text-gray-900 mb-3">Legend</h2>
+        <div className="bg-white rounded-2xl shadow-xl shadow-black/5 border border-[#005b52]/10 p-6 mb-6">
+          <h2 className="text-sm font-semibold text-[#04221f] mb-3">Legend</h2>
           <div className="flex flex-wrap gap-6">
             <div className="flex items-center gap-2">
               <div className="w-4 h-4 rounded-full bg-red-500"></div>
-              <span className="text-sm text-gray-700">High Risk</span>
+              <span className="text-sm text-[#005b52] font-medium">High Risk</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-4 h-4 rounded-full bg-yellow-500"></div>
-              <span className="text-sm text-gray-700">Medium Risk</span>
+              <span className="text-sm text-[#005b52] font-medium">Medium Risk</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-4 h-4 rounded-full bg-green-500"></div>
-              <span className="text-sm text-gray-700">Low Risk</span>
+              <span className="text-sm text-[#005b52] font-medium">Low Risk</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-4 h-4 rounded-full bg-gray-400"></div>
-              <span className="text-sm text-gray-700">Invoice/EwayBill</span>
+              <span className="text-sm text-[#005b52] font-medium">Invoice/EwayBill</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-6 h-6 rounded-full bg-red-500 animate-pulse"></div>
-              <span className="text-sm text-gray-700">Circular Trade</span>
+              <span className="text-sm text-[#005b52] font-medium">Circular Trade</span>
             </div>
           </div>
         </div>
 
         {/* Graph Container */}
-        <div className="bg-white rounded-lg shadow overflow-hidden" style={{ height: '700px' }}>
+        <div className="bg-white rounded-2xl shadow-xl shadow-black/5 border border-[#005b52]/10 overflow-hidden" style={{ height: '700px' }}>
           <ForceGraph2D
             ref={graphRef}
             graphData={{
@@ -269,7 +269,7 @@ export default function GraphPage() {
             linkDirectionalArrowRelPos={1}
             linkDirectionalParticles={2}
             linkDirectionalParticleWidth={2}
-            backgroundColor="#F9FAFB"
+            backgroundColor="#ffffff"
             cooldownTicks={100}
             onEngineStop={() => {
               if (graphRef.current) {
@@ -282,7 +282,7 @@ export default function GraphPage() {
         {/* Tooltip */}
         {hoveredNode && (
           <div
-            className="fixed bg-gray-900 text-white px-4 py-3 rounded-lg shadow-lg z-50 pointer-events-none"
+            className="fixed bg-[#04221f] text-[#f7faf9] border border-[#dbf226]/20 px-4 py-3 rounded-lg shadow-2xl z-50 pointer-events-none"
             style={{
               left: `${mousePosition.x + 15}px`,
               top: `${mousePosition.y + 15}px`,
@@ -292,19 +292,18 @@ export default function GraphPage() {
             <div className="space-y-1">
               {hoveredNode.label === 'Taxpayer' && (
                 <>
-                  <div className="font-semibold text-sm">
+                  <div className="font-semibold text-sm text-[#dbf226]">
                     {hoveredNode.name || hoveredNode.id}
                   </div>
-                  <div className="text-xs text-gray-300">
+                  <div className="text-xs text-white/70">
                     GSTIN: {hoveredNode.id}
                   </div>
                   {hoveredNode.risk_level && (
                     <div className="text-xs">
-                      Risk: <span className={`font-medium ${
-                        hoveredNode.risk_level === 'HIGH_RISK' ? 'text-red-400' :
-                        hoveredNode.risk_level === 'MEDIUM_RISK' ? 'text-yellow-400' :
-                        'text-green-400'
-                      }`}>
+                      Risk: <span className={`font-medium ${hoveredNode.risk_level === 'HIGH_RISK' ? 'text-red-400' :
+                          hoveredNode.risk_level === 'MEDIUM_RISK' ? 'text-yellow-400' :
+                            'text-green-400'
+                        }`}>
                         {hoveredNode.risk_level.replace('_', ' ')}
                       </span>
                     </div>
@@ -318,8 +317,8 @@ export default function GraphPage() {
               )}
               {hoveredNode.label === 'Invoice' && (
                 <>
-                  <div className="font-semibold text-sm">Invoice</div>
-                  <div className="text-xs text-gray-300">
+                  <div className="font-semibold text-sm text-[#dbf226]">Invoice</div>
+                  <div className="text-xs text-white/70">
                     ID: {hoveredNode.id}
                   </div>
                   {hoveredNode.value && (
@@ -328,7 +327,7 @@ export default function GraphPage() {
                     </div>
                   )}
                   {hoveredNode.date && (
-                    <div className="text-xs text-gray-300">
+                    <div className="text-xs text-white/70">
                       Date: {hoveredNode.date}
                     </div>
                   )}
@@ -336,8 +335,8 @@ export default function GraphPage() {
               )}
               {hoveredNode.label === 'EwayBill' && (
                 <>
-                  <div className="font-semibold text-sm">E-Way Bill</div>
-                  <div className="text-xs text-gray-300">
+                  <div className="font-semibold text-sm text-[#dbf226]">E-Way Bill</div>
+                  <div className="text-xs text-white/70">
                     ID: {hoveredNode.id}
                   </div>
                 </>

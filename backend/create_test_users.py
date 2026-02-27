@@ -16,18 +16,15 @@ bcrypt = Bcrypt(app)
 def create_test_users():
     with app.app_context():
         print("Creating test users...")
-        
-        # Check if business users already exist
-        existing_business = User.query.filter_by(role='Business_Owner').first()
-        if existing_business:
-            print("Business owner users already exist:")
-            business_users = User.query.filter_by(role='Business_Owner').all()
-            for u in business_users:
-                print(f"  - {u.email} (GSTIN: {u.gstin})")
-            return
-        
-        # Create business owner test users
+        # Continue inserting test users; existing ones will be skipped automatically at the insert phase
+        # Create test users
         test_users = [
+            {
+                'email': 'admin@gstn.gov.in',
+                'password': 'admin123',
+                'role': 'Admin',
+                'gstin': 'ADMIN_NODE'
+            },
             {
                 'email': 'business1@example.com',
                 'password': 'business123',

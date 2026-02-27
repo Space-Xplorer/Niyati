@@ -26,7 +26,7 @@ export default function SignupPage() {
         try {
             const role = isAdmin ? 'Admin' : 'Business_Owner';
             await apiSignup(email, password, role, isAdmin ? undefined : gstin);
-            
+
             setSuccess('Registration successful! Redirecting to login...');
             setTimeout(() => router.push('/login'), 2000);
         } catch (err: any) {
@@ -37,19 +37,19 @@ export default function SignupPage() {
     };
 
     return (
-        <main className="min-h-screen flex items-center justify-center p-8" style={{ backgroundColor: '#efefef' }}>
-            <div className="w-full max-w-md bg-white border border-gray-300 rounded-xl p-8 space-y-6 shadow-lg">
+        <main className="min-h-screen flex items-center justify-center p-8 bg-[#f7faf9]">
+            <div className="w-full max-w-md bg-white border border-[#005b52]/10 rounded-2xl p-10 space-y-6 shadow-xl shadow-black/5">
                 <div className="text-center">
-                    <h1 className="text-3xl font-bold mb-2" style={{ color: '#005b52' }}>Join Niyati</h1>
-                    <p className="text-gray-600">Create a secure account to sync your bots</p>
+                    <h1 className="text-3xl font-bold mb-2 text-[#005b52]">Join Niyati</h1>
+                    <p className="text-[#005b52]/70">Create a secure account to sync your bots</p>
                 </div>
 
-                {error && <div className="text-red-700 bg-red-100 border border-red-300 p-3 rounded">{error}</div>}
-                {success && <div className="text-green-700 bg-green-100 border border-green-300 p-3 rounded">{success}</div>}
+                {error && <div className="text-red-700 bg-red-50 border border-red-200 p-3 rounded-lg text-sm">{error}</div>}
+                {success && <div className="text-[#04221f] bg-[#dbf226] border border-[#005b52]/20 p-3 rounded-lg text-sm font-medium">{success}</div>}
 
                 <form onSubmit={handleSignup} className="space-y-4">
                     <div>
-                        <label className="block text-sm font-medium mb-1" style={{ color: '#005b52' }}>Email</label>
+                        <label className="block text-sm font-medium mb-1 text-[#005b52]">Email</label>
                         <Input
                             type="email"
                             value={email}
@@ -59,7 +59,7 @@ export default function SignupPage() {
                         />
                     </div>
                     <div>
-                        <label className="block text-sm font-medium mb-1" style={{ color: '#005b52' }}>Password</label>
+                        <label className="block text-sm font-medium mb-1 text-[#005b52]">Password</label>
                         <Input
                             type="password"
                             value={password}
@@ -70,7 +70,7 @@ export default function SignupPage() {
                     </div>
                     {!isAdmin && (
                         <div>
-                            <label className="block text-sm font-medium mb-1" style={{ color: '#005b52' }}>GSTIN</label>
+                            <label className="block text-sm font-medium mb-1 text-[#005b52]">GSTIN</label>
                             <Input
                                 type="text"
                                 value={gstin}
@@ -87,18 +87,18 @@ export default function SignupPage() {
                             id="isAdmin"
                             checked={isAdmin}
                             onChange={(e) => setIsAdmin(e.target.checked)}
-                            className="w-4 h-4 border-gray-400 rounded focus:ring-2"
-                            style={{ accentColor: '#dbf226' }}
+                            className="w-4 h-4 border-[#005b52]/20 rounded text-[#005b52] focus:ring-[#005b52]"
+                            style={{ accentColor: '#005b52' }}
                         />
-                        <label htmlFor="isAdmin" className="text-sm font-medium text-gray-700">
+                        <label htmlFor="isAdmin" className="text-sm font-medium text-[#005b52]/70">
                             Register as Admin (For testing purposes)
                         </label>
                     </div>
                     <Button type="submit" className="w-full" isLoading={isLoading}>Sign Up</Button>
                 </form>
 
-                <p className="text-center text-gray-600 text-sm mt-4">
-                    Already have an account? <Link href="/login" className="font-medium hover:underline" style={{ color: '#005b52' }}>Log in</Link>
+                <p className="text-center text-[#005b52]/70 text-sm mt-6">
+                    Already have an account? <Link href="/login" className="font-bold text-[#005b52] hover:underline hover:text-[#04221f] transition-colors">Log in</Link>
                 </p>
             </div>
         </main>

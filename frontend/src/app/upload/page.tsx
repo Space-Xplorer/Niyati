@@ -102,7 +102,7 @@ export default function UploadPage() {
 
       const result: UploadResponse = await response.json();
       setSuccess(result);
-      
+
       // Reset form
       setFiles({
         e_invoices: null,
@@ -120,24 +120,24 @@ export default function UploadPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[#f7faf9]">
       <div className="max-w-4xl mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-8 flex justify-between items-start">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Upload GST Data</h1>
-            <p className="text-gray-600 mt-2">Upload 6 CSV files to analyze GST fraud patterns</p>
+            <h1 className="text-3xl font-bold text-[#04221f]">Upload GST Data</h1>
+            <p className="text-[#005b52]/70 mt-2">Upload 6 CSV files to analyze GST fraud patterns</p>
           </div>
           <div className="flex gap-2">
             <button
               onClick={() => (window.location.href = '/')}
-              className="text-sm bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded transition"
+              className="text-sm bg-white border border-[#005b52]/20 hover:bg-[#005b52]/5 text-[#04221f] px-4 py-2 rounded-lg font-medium transition"
             >
               Home
             </button>
             <button
               onClick={() => (window.location.href = '/dashboard')}
-              className="text-sm bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded transition"
+              className="text-sm bg-[#005b52] hover:bg-[#04221f] text-[#dbf226] px-4 py-2 rounded-lg font-medium transition shadow-md shadow-[#005b52]/20"
             >
               Dashboard
             </button>
@@ -145,11 +145,11 @@ export default function UploadPage() {
         </div>
 
         {/* Upload Form */}
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-white rounded-2xl shadow-xl shadow-black/5 border border-[#005b52]/10 p-8">
           <form onSubmit={handleSubmit} className="space-y-6">
             {FILE_TYPES.map((type) => (
               <div key={type.key}>
-                <label htmlFor={type.key} className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor={type.key} className="block text-sm font-medium text-[#005b52] mb-2">
                   {type.label} <span className="text-red-500">*</span>
                 </label>
                 <div className="flex items-center gap-4">
@@ -158,7 +158,7 @@ export default function UploadPage() {
                     type="file"
                     accept=".csv"
                     onChange={(e) => handleFileChange(type.key, e.target.files?.[0] || null)}
-                    className="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                    className="block w-full text-sm text-[#04221f] border border-[#005b52]/20 rounded-lg cursor-pointer bg-[#f7faf9] focus:outline-none focus:ring-2 focus:ring-[#005b52] file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-[#005b52]/5 file:text-[#005b52] hover:file:bg-[#005b52]/10"
                     disabled={uploading}
                   />
                   {files[type.key] && (
@@ -250,7 +250,7 @@ export default function UploadPage() {
                   setError(null);
                   setSuccess(null);
                 }}
-                className="px-6 py-3 rounded-lg font-medium text-gray-700 bg-gray-200 hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-6 py-3 rounded-lg font-medium text-[#005b52] bg-white border border-[#005b52]/20 hover:bg-[#005b52]/5 focus:outline-none focus:ring-2 focus:ring-[#005b52]/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 disabled={uploading}
               >
                 Clear
@@ -264,15 +264,15 @@ export default function UploadPage() {
 
         {/* Progress Indicator */}
         {uploading && (
-          <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <div className="mt-6 bg-[#005b52]/5 border border-[#005b52]/20 rounded-lg p-6">
             <div className="flex items-center gap-3">
-              <svg className="animate-spin h-6 w-6 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <svg className="animate-spin h-6 w-6 text-[#005b52]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
               </svg>
               <div className="flex-1">
-                <p className="text-sm font-medium text-blue-900">Processing your files...</p>
-                <p className="text-xs text-blue-700 mt-1">
+                <p className="text-sm font-medium text-[#04221f]">Processing your files...</p>
+                <p className="text-xs text-[#005b52]/70 mt-1">
                   This may take up to 60 seconds. The system is validating data, building knowledge graphs, and detecting fraud patterns.
                 </p>
               </div>
@@ -281,9 +281,9 @@ export default function UploadPage() {
         )}
 
         {/* Info Box */}
-        <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <h3 className="text-sm font-semibold text-blue-900 mb-2">Required Files</h3>
-          <ul className="text-sm text-blue-800 space-y-1">
+        <div className="mt-6 bg-[#005b52]/5 border border-[#005b52]/20 rounded-lg p-6">
+          <h3 className="text-sm font-semibold text-[#04221f] mb-2">Required Files</h3>
+          <ul className="text-sm text-[#005b52]/70 space-y-1">
             {FILE_TYPES.map((type) => (
               <li key={type.key} className="flex items-center gap-2">
                 <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">

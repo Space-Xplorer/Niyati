@@ -105,10 +105,10 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-[#f7faf9] flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading dashboard...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#005b52] mx-auto"></div>
+          <p className="mt-4 text-[#005b52]/70">Loading dashboard...</p>
         </div>
       </div>
     );
@@ -135,38 +135,38 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[#f7faf9]">
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-8 flex justify-between items-start">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Trust Dashboard</h1>
-            <p className="text-gray-600 mt-2">
+            <h1 className="text-3xl font-bold text-[#04221f]">Trust Dashboard</h1>
+            <p className="text-[#005b52]/70 mt-2">
               {user?.role === 'admin' ? 'Global View' : `GSTIN: ${user?.email}`}
             </p>
           </div>
           <div className="flex gap-2">
             <button
               onClick={() => window.location.href = '/'}
-              className="text-sm bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded transition"
+              className="text-sm bg-white border border-[#005b52]/20 hover:bg-[#005b52]/5 text-[#04221f] px-4 py-2 rounded-lg font-medium transition"
             >
               Home
             </button>
             <button
               onClick={() => window.location.href = '/graph'}
-              className="text-sm bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded transition"
+              className="text-sm bg-[#005b52] hover:bg-[#04221f] text-[#dbf226] px-4 py-2 rounded-lg font-medium transition shadow-md shadow-[#005b52]/20"
             >
               View Graph
             </button>
             <button
               onClick={() => window.location.href = '/upload'}
-              className="text-sm bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded transition"
+              className="text-sm bg-[#dbf226] hover:bg-[#c4da1e] border border-[#04221f]/10 text-[#04221f] px-4 py-2 rounded-lg font-medium transition shadow-md shadow-black/5"
             >
               Upload Data
             </button>
             <button
               onClick={logout}
-              className="text-sm bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded transition"
+              className="text-sm bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-medium transition"
             >
               Logout
             </button>
@@ -175,25 +175,25 @@ export default function DashboardPage() {
 
         {/* Health Score and Risk Level */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-          <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Health Score</h2>
+          <div className="bg-white rounded-2xl shadow-xl shadow-black/5 border border-[#005b52]/10 p-6">
+            <h2 className="text-lg font-semibold text-[#04221f] mb-4">Health Score</h2>
             <HealthGauge score={data.health_score} />
           </div>
-          <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Risk Level</h2>
+          <div className="bg-white rounded-2xl shadow-xl shadow-black/5 border border-[#005b52]/10 p-6">
+            <h2 className="text-lg font-semibold text-[#04221f] mb-4">Risk Level</h2>
             <RiskBadge level={data.risk_level} probability={data.risk_probability} />
-            <div className="mt-4 space-y-2">
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-600">Circular Trade Patterns:</span>
-                <span className="font-medium">{data.patterns.circular_trade}</span>
+            <div className="mt-6 space-y-3">
+              <div className="flex justify-between text-sm py-2 border-b border-[#005b52]/5">
+                <span className="text-[#005b52]/70">Circular Trade Patterns:</span>
+                <span className="font-bold text-[#04221f]">{data.patterns.circular_trade}</span>
               </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-600">Ghost Invoices:</span>
-                <span className="font-medium">{data.patterns.ghost_invoices}</span>
+              <div className="flex justify-between text-sm py-2 border-b border-[#005b52]/5">
+                <span className="text-[#005b52]/70">Ghost Invoices:</span>
+                <span className="font-bold text-[#04221f]">{data.patterns.ghost_invoices}</span>
               </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-600">Spider Web Involvement:</span>
-                <span className="font-medium">{data.patterns.spider_web_involvement ? 'Yes' : 'No'}</span>
+              <div className="flex justify-between text-sm py-2">
+                <span className="text-[#005b52]/70">Spider Web Involvement:</span>
+                <span className="font-bold text-[#04221f]">{data.patterns.spider_web_involvement ? 'Yes' : 'No'}</span>
               </div>
             </div>
           </div>
@@ -201,15 +201,15 @@ export default function DashboardPage() {
 
         {/* Shape Plots */}
         <div className="mb-8">
-          <ShapePlots gstin={data.gstin || user?.email || ''} token={token || ''} />
+          <ShapePlots gstin={data.gstin || user?.gstin || ''} token={token || ''} />
         </div>
 
         {/* Detailed Explanation */}
         {data.explanation && (
           <div className="mb-8">
-            <div className="bg-white rounded-lg shadow p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">Detailed Risk Assessment</h2>
-              <pre className="whitespace-pre-wrap text-sm text-gray-700 font-mono bg-gray-50 p-4 rounded">
+            <div className="bg-white rounded-2xl shadow-xl shadow-black/5 border border-[#005b52]/10 p-6">
+              <h2 className="text-lg font-semibold text-[#04221f] mb-4">Detailed Risk Assessment</h2>
+              <pre className="whitespace-pre-wrap text-sm text-[#005b52]/90 font-mono bg-[#f7faf9] border border-[#005b52]/10 p-4 rounded-xl">
                 {data.explanation}
               </pre>
             </div>

@@ -31,8 +31,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${arsenica.variable} ${hkGrotesk.variable}`}>
-      <body className="font-sans bg-[#f7faf9] text-[#005b52] antialiased">
+    <html lang="en" className={`${arsenica.variable} ${hkGrotesk.variable}`} suppressHydrationWarning>
+      <body suppressHydrationWarning className="font-sans bg-[#f7faf9] text-[#005b52] antialiased">
         <AuthProvider>
           {children}
         </AuthProvider>

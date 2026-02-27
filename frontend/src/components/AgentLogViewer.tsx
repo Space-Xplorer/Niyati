@@ -92,13 +92,13 @@ export const AgentLogViewer: React.FC = () => {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow overflow-hidden">
-      <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+    <div className="bg-white rounded-2xl shadow-xl shadow-black/5 border border-[#005b52]/10 overflow-hidden">
+      <div className="px-6 py-4 border-b border-[#005b52]/5 flex items-center justify-between">
         <div className="flex items-center space-x-3">
-          <h2 className="text-lg font-semibold text-gray-900">Agent Activity Log</h2>
+          <h2 className="text-lg font-semibold text-[#04221f]">Agent Activity Log</h2>
           <div className="flex items-center space-x-2">
             <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-500' : 'bg-red-500'}`}></div>
-            <span className="text-xs text-gray-600">
+            <span className="text-xs text-[#005b52]/70">
               {isConnected ? 'Connected' : 'Disconnected'}
             </span>
           </div>
@@ -106,22 +106,22 @@ export const AgentLogViewer: React.FC = () => {
         <div className="flex items-center space-x-2">
           <button
             onClick={clearLogs}
-            className="px-3 py-1 text-sm text-gray-600 hover:text-gray-900 transition-colors"
+            className="px-3 py-1 text-sm text-[#005b52]/70 hover:text-[#04221f] transition-colors"
           >
             Clear
           </button>
           <button
             onClick={() => setIsExpanded(!isExpanded)}
-            className="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+            className="px-3 py-1 text-sm bg-[#005b52] text-[#dbf226] rounded hover:bg-[#04221f] transition-colors shadow-sm"
           >
             {isExpanded ? 'Collapse' : 'Expand'}
           </button>
         </div>
       </div>
-      <div className={`overflow-y-auto bg-gray-50 ${isExpanded ? 'h-96' : 'h-48'} transition-all duration-300`}>
+      <div className={`overflow-y-auto bg-[#f7faf9] ${isExpanded ? 'h-96' : 'h-48'} transition-all duration-300`}>
         {logs.length === 0 ? (
           <div className="flex items-center justify-center h-full">
-            <p className="text-gray-500 text-sm">Waiting for agent activity...</p>
+            <p className="text-[#04221f]/70 text-sm">Waiting for agent activity...</p>
           </div>
         ) : (
           <div className="p-4 space-y-2 font-mono text-sm">
@@ -130,7 +130,7 @@ export const AgentLogViewer: React.FC = () => {
                 key={log.id}
                 className={`flex items-start space-x-3 ${log.isError ? 'bg-red-50 border-l-4 border-red-500 pl-2' : ''}`}
               >
-                <span className="text-gray-400 text-xs whitespace-nowrap">
+                <span className="text-[#04221f]/50 text-xs whitespace-nowrap">
                   {formatTime(log.timestamp)}
                 </span>
                 <span className={`flex-1 ${log.isError ? 'text-red-700 font-semibold' : getAgentColor(log.agent)}`}>
@@ -142,8 +142,8 @@ export const AgentLogViewer: React.FC = () => {
           </div>
         )}
       </div>
-      <div className="px-6 py-3 bg-gray-100 border-t border-gray-200">
-        <div className="flex items-center justify-between text-xs text-gray-600">
+      <div className="px-6 py-3 bg-white border-t border-[#005b52]/5">
+        <div className="flex items-center justify-between text-xs text-[#005b52]/70">
           <span>{logs.length} messages</span>
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-1">

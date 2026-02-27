@@ -360,11 +360,7 @@ async def health_check():
     return {"status": "ok", "message": "FastAPI backend is running"}
 
 
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=5000)
-
-
+ 
 # ============================================================================
 # TASK 12.2: POST /sync Endpoint
 # ============================================================================
@@ -822,3 +818,9 @@ async def get_risk_details(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Error retrieving risk details"
         )
+
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=5000)
+
