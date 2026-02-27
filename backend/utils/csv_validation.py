@@ -8,8 +8,6 @@ This module provides validation functions for the 6 types of GST CSV files:
 - filing_history.csv
 - purchase_register.csv
 - returns_summary.csv
-
-Requirements: 1.1-1.7
 """
 
 import pandas as pd

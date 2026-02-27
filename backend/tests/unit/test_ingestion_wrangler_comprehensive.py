@@ -7,8 +7,6 @@ This test suite validates the Ingestion Wrangler node functionality:
 - SSE message broadcasting
 - State updates with validated_data and engineered_features
 - Feature engineering computations
-
-Requirements: 1.1-1.8, 2.1-2.8, 16.1, 16.2, 16.3, 19.3
 """
 
 import sys
@@ -93,8 +91,6 @@ def initial_state(mock_csv_files):
 async def test_csv_validation_with_mock_data(initial_state, mock_event_queue):
     """
     Test that the Ingestion Wrangler validates CSV files correctly.
-    
-    Requirements: 1.1-1.7
     """
     # Mock the database fetch to return empty data (first run)
     async def mock_fetch_existing():
@@ -127,8 +123,6 @@ async def test_csv_validation_with_mock_data(initial_state, mock_event_queue):
 async def test_pii_hashing(initial_state, mock_event_queue):
     """
     Test that PII data (phone and email) is hashed correctly.
-    
-    Requirements: 16.1, 16.2, 16.3
     """
     async def mock_fetch_existing():
         return {
@@ -174,8 +168,6 @@ async def test_pii_hashing(initial_state, mock_event_queue):
 async def test_sse_broadcasting(initial_state, mock_event_queue):
     """
     Test that SSE messages are broadcast during processing.
-    
-    Requirements: 19.3
     """
     async def mock_fetch_existing():
         return {
@@ -222,8 +214,6 @@ async def test_sse_broadcasting(initial_state, mock_event_queue):
 async def test_state_updates(initial_state, mock_event_queue):
     """
     Test that state is updated correctly with validated_data and engineered_features.
-    
-    Requirements: 1.8, 2.8
     """
     async def mock_fetch_existing():
         return {
@@ -271,8 +261,6 @@ async def test_state_updates(initial_state, mock_event_queue):
 async def test_feature_engineering(initial_state, mock_event_queue):
     """
     Test that engineered features are computed correctly.
-    
-    Requirements: 2.1-2.8
     """
     async def mock_fetch_existing():
         return {
@@ -318,8 +306,6 @@ async def test_feature_engineering(initial_state, mock_event_queue):
 async def test_invalid_csv_handling(mock_event_queue):
     """
     Test that invalid CSV files are handled correctly with descriptive errors.
-    
-    Requirements: 1.7
     """
     # Create CSV with missing required fields
     invalid_csv_files = {

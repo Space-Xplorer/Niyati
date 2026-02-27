@@ -60,7 +60,7 @@ export async function login(email: string, password: string) {
             role: string;
             gstin?: string;
         };
-    }>('/api/auth/login', {
+    }>('/auth/login', {
         method: 'POST',
         body: JSON.stringify({ email, password }),
     });
@@ -75,7 +75,7 @@ export async function signup(
     role: string,
     gstin?: string
 ) {
-    return apiRequest<{ message: string }>('/api/auth/signup', {
+    return apiRequest<{ message: string }>('/auth/register', {
         method: 'POST',
         body: JSON.stringify({ email, password, role, gstin }),
     });

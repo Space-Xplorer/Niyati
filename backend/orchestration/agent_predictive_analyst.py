@@ -4,8 +4,6 @@ Agent 4: Predictive Analyst
 This module implements the Predictive Analyst agent as a LangGraph node.
 The agent loads the trained EBM model, runs inference on engineered features,
 extracts feature contributions, and classifies risk levels.
-
-Requirements: 5.1-5.8, 20.1-20.3, 19.6
 """
 
 import asyncio
@@ -50,8 +48,6 @@ def load_ebm_model() -> ExplainableBoostingClassifier:
     Raises:
         FileNotFoundError: If model file doesn't exist
         Exception: If model loading fails
-    
-    Requirements: 5.1, 5.2
     """
     global _model_cache
     
@@ -82,8 +78,6 @@ def classify_risk_level(probability: float) -> str:
     
     Returns:
         Risk level: 'HIGH_RISK', 'MEDIUM_RISK', or 'LOW_RISK'
-    
-    Requirements: 5.6, 5.7, 5.8
     """
     if probability >= 0.7:
         return 'HIGH_RISK'
@@ -110,8 +104,6 @@ def extract_top_drivers(
     
     Returns:
         List of dictionaries with feature_name, contribution_value, direction
-    
-    Requirements: 5.4, 5.5
     """
     # Get the row for this GSTIN
     entity_row = features_df[features_df['Gstin'] == gstin]
@@ -171,8 +163,6 @@ def extract_shape_plot_data(
     
     Returns:
         Dictionary mapping feature names to shape plot data
-    
-    Requirements: 20.1, 20.2, 20.3
     """
     shape_plots = {}
     
@@ -256,8 +246,6 @@ async def predictive_analyst_node(state: NiyatiState) -> NiyatiState:
     
     Returns:
         Updated NiyatiState with risk_predictions and shape_plots
-    
-    Requirements: 5.1-5.8, 20.1-20.3, 19.6
     """
     try:
         engineered_features = state.get('engineered_features')

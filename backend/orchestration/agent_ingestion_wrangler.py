@@ -5,8 +5,6 @@ This module implements the Ingestion Wrangler agent as a LangGraph node.
 The agent validates CSV files, computes engineered features, and hashes PII data.
 
 Supports incremental ingestion: detects new/updated records and only processes changes.
-
-Requirements: 1.1-1.8, 2.1-2.8, 16.1, 16.2, 16.3, 19.3
 """
 
 import asyncio
@@ -60,8 +58,6 @@ async def ingestion_wrangler_node(state: NiyatiState) -> NiyatiState:
     
     Returns:
         Updated NiyatiState with validated_data, engineered_features, and change_summary
-    
-    Requirements: 1.1-1.8, 2.1-2.8, 16.1, 16.2, 16.3, 19.3
     """
     try:
         csv_files = state['csv_files']

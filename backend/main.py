@@ -4,8 +4,6 @@ FastAPI Application for Project Niyati
 This module implements the REST API endpoints for the GST fraud detection platform.
 It includes SSE support for real-time agent progress updates, authentication, RBAC,
 and integration with the LangGraph multi-agent workflow.
-
-Requirements: 11.1-11.8, 19.1-19.2, 17.7
 """
 
 import os
@@ -62,6 +60,8 @@ app.add_middleware(
     allow_origins=[
         "http://localhost:3000",
         "http://127.0.0.1:3000",
+        "http://localhost:5000",
+        "http://127.0.0.1:5000",
         "http://localhost:8000",
         "http://127.0.0.1:8000"
     ],
@@ -121,8 +121,6 @@ class TokenData(BaseModel):
 async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)) -> User:
     """
     Extract and validate JWT token, return current user.
-    
-    Requirements: 8.2
     """
     token = credentials.credentials
     
@@ -169,8 +167,6 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
 async def require_admin(current_user: User = Depends(get_current_user)) -> User:
     """
     Ensure current user has Admin role.
-    
-    Requirements: 8.3
     """
     if current_user.role != 'Admin':
         raise HTTPException(
@@ -187,8 +183,6 @@ async def require_admin(current_user: User = Depends(get_current_user)) -> User:
 async def broadcast_event(message: str):
     """
     Broadcast an event message to all SSE clients.
-    
-    Requirements: 19.2
     """
     global event_queue
     if event_queue is not None:
@@ -198,8 +192,6 @@ async def broadcast_event(message: str):
 async def event_generator():
     """
     Generate Server-Sent Events from the global event queue.
-    
-    Requirements: 19.1
     """
     global event_queue
     
@@ -232,8 +224,6 @@ async def stream_logs():
     
     Returns:
         StreamingResponse with text/event-stream content type
-    
-    Requirements: 19.1, 19.2
     """
     return StreamingResponse(
         event_generator(),
@@ -253,8 +243,6 @@ async def stream_logs():
 async def http_exception_handler(request: Request, exc: HTTPException):
     """
     Handle HTTP exceptions and return consistent error responses.
-    
-    Requirements: 11.7
     """
     logger.error(f"HTTP {exc.status_code}: {exc.detail} - Path: {request.url.path}")
     return JSONResponse(
@@ -267,8 +255,6 @@ async def http_exception_handler(request: Request, exc: HTTPException):
 async def general_exception_handler(request: Request, exc: Exception):
     """
     Handle internal server errors and return generic error response.
-    
-    Requirements: 11.8
     """
     logger.error(f"Internal error: {str(exc)} - Path: {request.url.path}", exc_info=True)
     return JSONResponse(
@@ -285,8 +271,6 @@ async def general_exception_handler(request: Request, exc: Exception):
 async def register(request: RegisterRequest):
     """
     POST /auth/register - User registration endpoint.
-    
-    Requirements: 8.1, 11.5
     """
     # Validate role
     if request.role not in ['Admin', 'Business_Owner']:
@@ -334,8 +318,6 @@ async def register(request: RegisterRequest):
 async def login(request: LoginRequest):
     """
     POST /auth/login - User authentication endpoint.
-    
-    Requirements: 11.6
     """
     with flask_app.app_context():
         # Find user
@@ -380,7 +362,7 @@ async def health_check():
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=5000)
 
 
 # ============================================================================
@@ -402,8 +384,6 @@ async def sync_data(
     
     This endpoint accepts multipart/form-data with 6 CSV files, triggers the
     complete LangGraph workflow (all 5 agents), and returns a summary of results.
-    
-    Requirements: 11.1, 7.7
     """
     try:
         # Read CSV files into pandas DataFrames
@@ -479,8 +459,6 @@ async def pre_audit(
     This endpoint executes the full agent workflow for a specific GSTIN only,
     returns detailed risk analysis, sends email notification for HIGH_RISK cases,
     and logs the request.
-    
-    Requirements: 11.2, 10.1, 10.2, 10.3, 10.4
     """
     try:
         # Check RBAC permissions
@@ -582,8 +560,6 @@ async def get_dashboard(current_user: User = Depends(get_current_user)):
     
     This endpoint returns health score, risk level, top drivers, vendor risks,
     and detected patterns. Data is filtered based on user role and GSTIN.
-    
-    Requirements: 11.3, 9.2, 17.7
     """
     try:
         with flask_app.app_context():
@@ -676,8 +652,6 @@ async def get_graph(current_user: User = Depends(get_current_user)):
     
     This endpoint queries Neo4j for nodes and edges, applies RBAC filtering,
     and returns data formatted for force-directed graph visualization.
-    
-    Requirements: 11.4, 17.7
     """
     try:
         from neo4j import GraphDatabase
@@ -778,8 +752,6 @@ async def get_risk_details(
     
     This endpoint returns risk predictions with EBM shape plot data for
     visualization of feature contributions. RBAC filtering is applied.
-    
-    Requirements: 20.1, 20.2, 20.3, 20.4
     """
     try:
         # Check RBAC permissions

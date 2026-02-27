@@ -3,9 +3,6 @@ Integration Tests for Agent 2: Graph Architect
 
 This module tests the Graph Architect agent with a real Neo4j connection
 to verify end-to-end graph construction, batching, and performance.
-
-Requirements: 3.1-3.9, 17.2
-
 Note: These tests require a running Neo4j instance with credentials in .env
 """
 

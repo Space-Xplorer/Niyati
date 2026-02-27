@@ -5,9 +5,6 @@ This module tests the complete LangGraph workflow orchestration for Project Niya
 It validates that all 5 agents execute in the correct order, Agent 3 and Agent 4 run
 concurrently, error handling works correctly, SSE messages are broadcast, and
 performance targets are met.
-
-Task: 10.3 Test LangGraph workflow
-Requirements: 7.1-7.7, 17.3, 17.4, 18.7
 """
 
 import pytest

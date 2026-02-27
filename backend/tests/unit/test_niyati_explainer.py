@@ -10,8 +10,6 @@ Tests the Niyati Explainer agent functionality including:
 - Response validation
 - SSE message broadcasting
 - Integration with existing risk predictions
-
-Requirements: 6.1-6.7, 13.1-13.7, 18.1-18.4, 19.7
 """
 
 import pytest

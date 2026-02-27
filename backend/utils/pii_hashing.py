@@ -4,8 +4,6 @@ PII Hashing Utility Module
 This module provides functions for hashing and masking Personally Identifiable Information (PII)
 such as phone numbers and email addresses. It implements SHA-256 hashing for secure storage
 and masking functions for frontend display.
-
-Requirements: 16.1, 16.4
 """
 
 import hashlib

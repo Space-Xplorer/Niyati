@@ -3,8 +3,6 @@ LangGraph State Schema
 
 This module defines the state schema for the Project Niyati multi-agent workflow.
 The state is passed between agents and tracks the progress of data through the pipeline.
-
-Requirements: 7.1
 """
 
 from typing import TypedDict, Dict, List, Any, Optional

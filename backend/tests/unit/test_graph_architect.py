@@ -3,8 +3,6 @@ Unit Tests for Agent 2: Graph Architect
 
 This module tests the Graph Architect agent's ability to build a Neo4j knowledge graph
 from validated CSV data, including node creation, relationship creation, and batching.
-
-Requirements: 3.1-3.9, 17.2
 """
 
 import pytest

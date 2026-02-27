@@ -32,19 +32,7 @@ if (typeof window !== 'undefined') {
 
 // Dynamically import ForceGraph2D to avoid SSR issues
 const ForceGraph2D = dynamic(
-  () => {
-    // Ensure THREE.js is loaded before importing react-force-graph
-    return new Promise((resolve) => {
-      const checkTHREE = () => {
-        if ((window as any).THREE) {
-          import('react-force-graph').then(mod => resolve(mod.ForceGraph2D as any));
-        } else {
-          setTimeout(checkTHREE, 100);
-        }
-      };
-      checkTHREE();
-    });
-  },
+  () => import('react-force-graph').then(mod => mod.ForceGraph2D),
   { 
     ssr: false,
     loading: () => (
@@ -53,7 +41,7 @@ const ForceGraph2D = dynamic(
       </div>
     )
   }
-);
+) as any;
 
 interface GraphNode {
   id: string;

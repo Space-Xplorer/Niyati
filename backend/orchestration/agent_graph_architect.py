@@ -6,8 +6,6 @@ The agent builds a Neo4j knowledge graph from validated CSV data, creating
 Taxpayer, Invoice, and EwayBill nodes with their relationships.
 
 Supports incremental updates: uses MERGE operations to handle new/updated records.
-
-Requirements: 3.1-3.9, 16.2, 17.1, 17.2, 18.6, 19.4
 """
 
 import asyncio
@@ -91,8 +89,6 @@ async def graph_architect_node(state: NiyatiState) -> NiyatiState:
     
     Returns:
         Updated NiyatiState with graph_built=True
-    
-    Requirements: 3.1-3.9, 16.2, 17.1, 17.2, 18.6, 19.4
     """
     try:
         validated_data = state['validated_data']
@@ -302,8 +298,6 @@ def _prepare_taxpayer_nodes(entity_master: pd.DataFrame) -> List[Dict[str, Any]]
     
     Returns:
         List of dictionaries with Taxpayer node properties
-    
-    Requirements: 3.1, 16.2
     """
     nodes = []
     
@@ -336,8 +330,6 @@ def _prepare_invoice_nodes(e_invoices: pd.DataFrame) -> List[Dict[str, Any]]:
     
     Returns:
         List of dictionaries with Invoice node properties
-    
-    Requirements: 3.2
     """
     nodes = []
     
@@ -372,8 +364,6 @@ def _prepare_eway_bill_nodes(eway_bills: pd.DataFrame) -> List[Dict[str, Any]]:
     
     Returns:
         List of dictionaries with EwayBill node properties
-    
-    Requirements: 3.3
     """
     nodes = []
     
@@ -402,8 +392,6 @@ def _prepare_issued_relationships(e_invoices: pd.DataFrame) -> List[Dict[str, An
     
     Returns:
         List of dictionaries with relationship data
-    
-    Requirements: 3.6
     """
     relationships = []
     
@@ -426,8 +414,6 @@ def _prepare_to_relationships(e_invoices: pd.DataFrame) -> List[Dict[str, Any]]:
     
     Returns:
         List of dictionaries with relationship data
-    
-    Requirements: 3.7
     """
     relationships = []
     
@@ -456,8 +442,6 @@ def _prepare_backed_by_relationships(
     
     Returns:
         List of dictionaries with relationship data
-    
-    Requirements: 3.8
     """
     relationships = []
     
@@ -492,8 +476,6 @@ def _prepare_shared_contact_relationships(
     
     Returns:
         List of dictionaries with relationship data
-    
-    Requirements: 3.9, 16.2
     """
     relationships = []
     

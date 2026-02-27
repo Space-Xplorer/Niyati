@@ -3,8 +3,6 @@ Feature Engineering Wrapper
 
 This module wraps the existing feature engineering logic to work with the LangGraph workflow.
 It adapts the standalone feature engineering script to work with DataFrames passed in state.
-
-Requirements: 2.1-2.8
 """
 
 import pandas as pd
@@ -43,8 +41,6 @@ def compute_engineered_features(csv_files: Dict[str, pd.DataFrame]) -> pd.DataFr
     
     Returns:
         DataFrame with engineered features indexed by Gstin
-    
-    Requirements: 2.1-2.8
     """
     # Extract DataFrames from dictionary
     entities = csv_files['entity_master'].copy()

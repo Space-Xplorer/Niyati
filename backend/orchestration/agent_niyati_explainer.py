@@ -4,8 +4,6 @@ Agent 5: Niyati Explainer
 This module implements the Niyati Explainer agent as a LangGraph node.
 The agent generates plain-language audit narratives using LLM (Groq or OpenAI)
 with circuit breaker protection and template-based fallback.
-
-Requirements: 6.1-6.7, 13.1-13.7, 18.1-18.4, 19.7, 20.7
 """
 
 import asyncio
@@ -47,8 +45,6 @@ def get_llm_client():
     
     Raises:
         ValueError: If LLM_PROVIDER is not supported or API key is missing
-    
-    Requirements: 13.1, 13.2, 13.3
     """
     llm_provider = os.getenv('LLM_PROVIDER', 'groq').lower()
     llm_api_key = os.getenv('LLM_API_KEY')
@@ -105,8 +101,6 @@ def format_structured_prompt(
     
     Returns:
         Formatted prompt string
-    
-    Requirements: 13.4
     """
     # Format risk probability as percentage
     risk_pct = f"{risk_probability * 100:.1f}%"
@@ -183,8 +177,6 @@ def call_llm_with_circuit_breaker(
     
     Raises:
         Exception: If LLM call fails or circuit breaker is open
-    
-    Requirements: 18.1, 18.2
     """
     def _call_llm():
         """Inner function for circuit breaker to wrap"""
@@ -211,8 +203,6 @@ def validate_narrative(narrative: str) -> bool:
     
     Returns:
         True if valid, False otherwise
-    
-    Requirements: 13.5
     """
     if not narrative or not isinstance(narrative, str):
         return False
@@ -234,8 +224,6 @@ def ensure_high_risk_prefix(narrative: str, risk_level: str) -> str:
     
     Returns:
         Narrative with correct prefix
-    
-    Requirements: 6.6
     """
     if risk_level == 'HIGH_RISK':
         # Check if it already starts with the prefix
@@ -265,8 +253,6 @@ async def generate_narrative_for_entity(
     
     Returns:
         Generated narrative text
-    
-    Requirements: 6.1-6.7, 13.4-13.6, 18.1-18.4
     """
     risk_level = risk_prediction.get('risk_level', 'LOW_RISK')
     risk_probability = risk_prediction.get('risk_probability', 0.0)
@@ -341,8 +327,6 @@ async def niyati_explainer_node(state: NiyatiState) -> NiyatiState:
     
     Returns:
         Updated NiyatiState with narratives
-    
-    Requirements: 6.1-6.7, 13.1-13.7, 18.1-18.4, 19.7, 20.7
     """
     try:
         risk_predictions = state.get('risk_predictions', {})

@@ -4,9 +4,6 @@ End-to-End Integration Test: Complete Workflow Execution
 This module tests the complete LangGraph workflow with actual mock data files.
 It validates the full end-to-end execution including all 5 agents, concurrent
 execution, SSE broadcasting, and performance targets.
-
-Task: 10.3 Test LangGraph workflow (E2E validation)
-Requirements: 7.1-7.7, 17.3, 17.4, 18.7
 """
 
 import pytest

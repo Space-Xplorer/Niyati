@@ -3,8 +3,6 @@ Neo4j UNWIND Batching Utility Module
 
 This module provides functions for efficient batch operations in Neo4j using the UNWIND pattern.
 It includes retry logic with exponential backoff for resilience.
-
-Requirements: 17.1, 17.2, 18.6
 """
 
 import time
@@ -46,8 +44,6 @@ def create_nodes_batch(
         ... ]
         >>> create_nodes_batch(session, "Taxpayer", nodes, "gstin")
         2
-    
-    Requirements: 17.1, 17.2, 18.6
     """
     if not nodes_data:
         return 0
@@ -120,8 +116,6 @@ def create_relationships_batch(
         ...     session, "ISSUED", rels, "Taxpayer", "gstin", "Invoice", "irn"
         ... )
         2
-    
-    Requirements: 17.1, 17.2, 18.6
     """
     if not relationships_data:
         return 0
@@ -197,8 +191,6 @@ def _execute_with_retry(
     
     Raises:
         Neo4jError: If all retry attempts fail
-    
-    Requirements: 18.6
     """
     last_exception = None
     
@@ -247,8 +239,6 @@ def create_constraints(session: Session, constraints: List[Dict[str, str]]) -> N
         ...     {"label": "Invoice", "property": "irn", "name": "invoice_irn"}
         ... ]
         >>> create_constraints(session, constraints)
-    
-    Requirements: 3.4, 3.5, 12.9, 12.10
     """
     for constraint in constraints:
         label = constraint['label']

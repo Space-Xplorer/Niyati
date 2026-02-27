@@ -12,8 +12,6 @@ Workflow Flow:
    - Agent 3: Risk Detective (structural pattern detection)
    - Agent 4: Predictive Analyst (ML risk scoring)
 4. Agent 5: Niyati Explainer (narrative generation)
-
-Requirements: 7.1-7.7, 17.3, 17.4, 18.7, 19.8, 19.9
 """
 
 import asyncio
@@ -90,8 +88,6 @@ def concurrent_analysis_node(state: NiyatiState) -> NiyatiState:
     
     Returns:
         Updated NiyatiState with structural_patterns and risk_predictions
-    
-    Requirements: 17.3, 17.4
     """
     async def run_concurrent():
         """Run both agents concurrently"""
@@ -147,8 +143,6 @@ def error_handling_node(state: NiyatiState) -> NiyatiState:
     
     Returns:
         Updated NiyatiState with error handling complete
-    
-    Requirements: 18.7
     """
     errors = state.get('errors', [])
     
@@ -178,8 +172,6 @@ def should_continue(state: NiyatiState) -> str:
     
     Returns:
         "error" if errors exist, "continue" otherwise
-    
-    Requirements: 7.6
     """
     if state.get('errors'):
         return "error"
@@ -199,8 +191,6 @@ def create_workflow() -> StateGraph:
     
     Returns:
         Compiled StateGraph ready for execution
-    
-    Requirements: 7.1-7.7, 17.3, 17.4, 18.7
     """
     # Create StateGraph with NiyatiState schema
     workflow = StateGraph(NiyatiState)
@@ -280,8 +270,6 @@ async def execute_workflow(csv_files: Dict[str, Any]) -> Dict[str, Any]:
     
     Returns:
         Dictionary containing workflow results and summary
-    
-    Requirements: 7.1-7.7, 19.8, 19.9
     """
     # Track execution time
     start_time = time.time()

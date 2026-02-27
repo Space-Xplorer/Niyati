@@ -8,8 +8,6 @@ This module tests the Predictive Analyst agent's ability to:
 - Extract shape plot data for visualization
 - Classify risk levels (HIGH_RISK, MEDIUM_RISK, LOW_RISK)
 - Broadcast SSE messages
-
-Requirements: 5.1-5.8, 20.1-20.3, 19.6
 """
 
 import pytest

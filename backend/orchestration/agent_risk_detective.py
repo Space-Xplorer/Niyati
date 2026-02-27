@@ -6,8 +6,6 @@ The agent runs structural graph queries on Neo4j to detect fraud patterns:
 - Circular trade (A -> B -> C -> A loops)
 - Ghost invoices (high-value invoices without eway bills)
 - Spider webs (entities connected via shared contacts)
-
-Requirements: 4.1-4.7, 19.5
 """
 
 import asyncio
@@ -74,8 +72,6 @@ async def risk_detective_node(state: NiyatiState) -> NiyatiState:
     
     Returns:
         Updated NiyatiState with structural_patterns populated
-    
-    Requirements: 4.1-4.7, 19.5
     """
     try:
         if not state.get('graph_built', False):
@@ -151,8 +147,6 @@ def _detect_circular_trade(session) -> List[Dict[str, Any]]:
     
     Returns:
         List of circular trade pattern dictionaries
-    
-    Requirements: 4.1, 4.2
     """
     query = """
     MATCH path = (a:Taxpayer)-[:ISSUED]->(i1:Invoice)-[:TO]->(b:Taxpayer)
@@ -213,8 +207,6 @@ def _detect_ghost_invoices(session, threshold: float = 100000.0) -> List[Dict[st
     
     Returns:
         List of ghost invoice pattern dictionaries
-    
-    Requirements: 4.3, 4.4
     """
     query = """
     MATCH (t:Taxpayer)-[:ISSUED]->(i:Invoice)
@@ -265,8 +257,6 @@ def _detect_spider_webs(session, min_cluster_size: int = 3) -> List[Dict[str, An
     
     Returns:
         List of spider web pattern dictionaries
-    
-    Requirements: 4.5, 4.6
     """
     query = """
     MATCH (t1:Taxpayer)-[sc:SHARED_CONTACT]-(t2:Taxpayer)

@@ -3,8 +3,6 @@ Unit tests for PII hashing utility module
 
 Tests the hash_pii() and mask_pii_display() functions to ensure correct
 hashing behavior and masking for frontend display.
-
-Requirements: 16.1, 16.4
 """
 
 import pytest

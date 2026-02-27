@@ -3,8 +3,6 @@ Unit Tests for Agent 3: Risk Detective
 
 This module tests the Risk Detective agent's ability to detect fraud patterns
 in the Neo4j knowledge graph, including circular trade, ghost invoices, and spider webs.
-
-Requirements: 4.1-4.7
 """
 
 import pytest
