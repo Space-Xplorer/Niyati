@@ -855,11 +855,33 @@ def risk_details(current_user, gstin):
     GET /risk/{gstin} - Return detailed risk data with SHAP plot information
     
     Calculates risk details on-the-fly from Neo4j data
+    
+    RBAC: Admin can view any GSTIN, Business owners can view their own GSTIN or their vendors
     """
     try:
         # Check RBAC permissions
         if current_user.role != 'Admin' and current_user.gstin != gstin:
-            return jsonify({'message': 'Access denied'}), 403
+            # For business owners, check if the requested GSTIN is one of their vendors
+            from utils.db_connection import get_neo4j_connection
+            
+            neo4j_conn = get_neo4j_connection()
+            neo4j_conn.connect()
+            
+            # Check if there's a relationship between current user and requested GSTIN
+            relationship_query = """
+            MATCH (current:Taxpayer {gstin: $current_gstin})-[:ISSUED]->(:Invoice)-[:TO]->(vendor:Taxpayer {gstin: $vendor_gstin})
+            RETURN count(*) as relationship_count
+            """
+            result = neo4j_conn.execute_query(relationship_query, {
+                'current_gstin': current_user.gstin,
+                'vendor_gstin': gstin
+            })
+            neo4j_conn.close()
+            
+            relationship_count = result[0].get('relationship_count', 0) if result else 0
+            
+            if relationship_count == 0:
+                return jsonify({'message': 'Access denied. You can only view risk data for your own GSTIN or your business partners.'}), 403
         
         from utils.db_connection import get_neo4j_connection
         import random

@@ -47,6 +47,15 @@ export default function GraphPage() {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const graphRef = useRef<any>(null);
 
+  // Track mouse position
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      setMousePosition({ x: e.clientX, y: e.clientY });
+    };
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
+  }, []);
+
   useEffect(() => {
     const fetchGraphData = async () => {
       if (!token) return;
@@ -82,6 +91,87 @@ export default function GraphPage() {
     fetchGraphData();
   }, [token, logout]);
 
+  // Detect cycles in the graph
+  const detectCycles = useCallback((nodes: GraphNode[], edges: GraphEdge[]) => {
+    const cycleNodes = new Set<string>();
+    const adjacencyList = new Map<string, string[]>();
+    
+    // Build adjacency list
+    edges.forEach(edge => {
+      if (!adjacencyList.has(edge.source)) {
+        adjacencyList.set(edge.source, []);
+      }
+      adjacencyList.get(edge.source)!.push(edge.target);
+    });
+    
+    // DFS to detect cycles
+    const visited = new Set<string>();
+    const recStack = new Set<string>();
+    const currentPath: string[] = [];
+    
+    const dfs = (nodeId: string): boolean => {
+      visited.add(nodeId);
+      recStack.add(nodeId);
+      currentPath.push(nodeId);
+      
+      const neighbors = adjacencyList.get(nodeId) || [];
+      for (const neighbor of neighbors) {
+        if (!visited.has(neighbor)) {
+          if (dfs(neighbor)) {
+            return true;
+          }
+        } else if (recStack.has(neighbor)) {
+          // Found a cycle - mark all nodes in the cycle
+          const cycleStartIndex = currentPath.indexOf(neighbor);
+          for (let i = cycleStartIndex; i < currentPath.length; i++) {
+            cycleNodes.add(currentPath[i]);
+          }
+          cycleNodes.add(neighbor);
+          return true;
+        }
+      }
+      
+      recStack.delete(nodeId);
+      currentPath.pop();
+      return false;
+    };
+    
+    // Check all nodes for cycles
+    nodes.forEach(node => {
+      if (!visited.has(node.id)) {
+        dfs(node.id);
+      }
+    });
+    
+    return cycleNodes;
+  }, []);
+
+  // Detect cycles when data loads
+  const [cycleNodes, setCycleNodes] = useState<Set<string>>(new Set());
+  
+  useEffect(() => {
+    if (data && data.nodes && data.edges) {
+      const cycles = detectCycles(data.nodes, data.edges);
+      setCycleNodes(cycles);
+      console.log(`Detected ${cycles.size} nodes involved in cycles`);
+    }
+  }, [data, detectCycles]);
+
+  // Detect cycle edges
+  const [cycleEdges, setCycleEdges] = useState<Set<string>>(new Set());
+  
+  useEffect(() => {
+    if (data && data.edges && cycleNodes.size > 0) {
+      const edges = new Set<string>();
+      data.edges.forEach(edge => {
+        if (cycleNodes.has(edge.source) && cycleNodes.has(edge.target)) {
+          edges.add(`${edge.source}-${edge.target}`);
+        }
+      });
+      setCycleEdges(edges);
+    }
+  }, [data, cycleNodes]);
+
   // Get node color based on risk level
   const getNodeColor = useCallback((node: GraphNode) => {
     if (node.label === 'Invoice' || node.label === 'EwayBill') {
@@ -105,11 +195,8 @@ export default function GraphPage() {
   }, []);
 
   // Handle node hover
-  const handleNodeHover = useCallback((node: GraphNode | null, event?: MouseEvent) => {
+  const handleNodeHover = useCallback((node: any) => {
     setHoveredNode(node);
-    if (event) {
-      setMousePosition({ x: event.clientX, y: event.clientY });
-    }
   }, []);
 
   // Render node canvas with pulsing animation for circular trade nodes
@@ -117,14 +204,22 @@ export default function GraphPage() {
     const label = node.label || '';
     const size = node.label === 'Taxpayer' ? 8 : 5;
     const color = getNodeColor(node);
+    const isInCycle = cycleNodes.has(node.id) || node.in_circular_trade;
 
     // Draw pulsing animation for circular trade nodes
-    if (node.in_circular_trade) {
+    if (isInCycle) {
       const pulseSize = size + Math.sin(Date.now() / 200) * 3;
       ctx.beginPath();
       ctx.arc(node.x, node.y, pulseSize, 0, 2 * Math.PI);
       ctx.fillStyle = 'rgba(239, 68, 68, 0.3)'; // Red with transparency
       ctx.fill();
+      
+      // Draw outer ring for cycle nodes
+      ctx.beginPath();
+      ctx.arc(node.x, node.y, size + 4, 0, 2 * Math.PI);
+      ctx.strokeStyle = '#EF4444';
+      ctx.lineWidth = 2 / globalScale;
+      ctx.stroke();
     }
 
     // Draw main node
@@ -149,7 +244,7 @@ export default function GraphPage() {
       ctx.fillStyle = '#1F2937';
       ctx.fillText(label, node.x, node.y + size + fontSize);
     }
-  }, [getNodeColor]);
+  }, [getNodeColor, cycleNodes]);
 
   if (loading) {
     return (
@@ -215,9 +310,24 @@ export default function GraphPage() {
           </div>
         </div>
 
-        {/* Legend */}
+        {/* Legend and Stats */}
         <div className="bg-white rounded-lg shadow p-4 mb-6">
-          <h2 className="text-sm font-semibold text-gray-900 mb-3">Legend</h2>
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-sm font-semibold text-gray-900">Legend</h2>
+            <div className="flex items-center gap-4 text-sm">
+              <span className="text-gray-600">
+                Nodes: <span className="font-semibold text-gray-900">{data.nodes.length}</span>
+              </span>
+              <span className="text-gray-600">
+                Edges: <span className="font-semibold text-gray-900">{data.edges.length}</span>
+              </span>
+              {cycleNodes.size > 0 && (
+                <span className="text-red-600">
+                  Cycle Nodes: <span className="font-semibold">{cycleNodes.size}</span>
+                </span>
+              )}
+            </div>
+          </div>
           <div className="flex flex-wrap gap-6">
             <div className="flex items-center gap-2">
               <div className="w-4 h-4 rounded-full bg-red-500"></div>
@@ -236,8 +346,11 @@ export default function GraphPage() {
               <span className="text-sm text-gray-700">Invoice/EwayBill</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-6 h-6 rounded-full bg-red-500 animate-pulse"></div>
-              <span className="text-sm text-gray-700">Circular Trade</span>
+              <div className="relative">
+                <div className="w-6 h-6 rounded-full bg-red-500 animate-pulse"></div>
+                <div className="absolute inset-0 rounded-full border-2 border-red-500"></div>
+              </div>
+              <span className="text-sm text-gray-700">Circular Trade / Cycle</span>
             </div>
           </div>
         </div>
@@ -263,8 +376,14 @@ export default function GraphPage() {
               ctx.fill();
             }}
             onNodeHover={handleNodeHover}
-            linkColor={() => '#D1D5DB'}
-            linkWidth={1.5}
+            linkColor={(link: any) => {
+              const edgeKey = `${link.source.id || link.source}-${link.target.id || link.target}`;
+              return cycleEdges.has(edgeKey) ? '#EF4444' : '#D1D5DB';
+            }}
+            linkWidth={(link: any) => {
+              const edgeKey = `${link.source.id || link.source}-${link.target.id || link.target}`;
+              return cycleEdges.has(edgeKey) ? 2.5 : 1.5;
+            }}
             linkDirectionalArrowLength={3.5}
             linkDirectionalArrowRelPos={1}
             linkDirectionalParticles={2}
@@ -309,9 +428,9 @@ export default function GraphPage() {
                       </span>
                     </div>
                   )}
-                  {hoveredNode.in_circular_trade && (
+                  {(hoveredNode.in_circular_trade || cycleNodes.has(hoveredNode.id)) && (
                     <div className="text-xs text-red-400 font-medium">
-                      ⚠ Involved in Circular Trade
+                      ⚠ Involved in Circular Trade / Cycle
                     </div>
                   )}
                 </>
@@ -330,6 +449,11 @@ export default function GraphPage() {
                   {hoveredNode.date && (
                     <div className="text-xs text-gray-300">
                       Date: {hoveredNode.date}
+                    </div>
+                  )}
+                  {cycleNodes.has(hoveredNode.id) && (
+                    <div className="text-xs text-red-400 font-medium">
+                      ⚠ Part of Circular Trade
                     </div>
                   )}
                 </>
