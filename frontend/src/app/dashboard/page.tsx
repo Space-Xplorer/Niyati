@@ -9,6 +9,7 @@ import { VendorRiskTable } from '@/components/VendorRiskTable';
 import { AgentLogViewer } from '@/components/AgentLogViewer';
 
 interface DashboardData {
+  gstin?: string;  // Add GSTIN to dashboard data
   health_score: number;
   risk_level: 'HIGH_RISK' | 'MEDIUM_RISK' | 'LOW_RISK';
   risk_probability: number;
@@ -32,7 +33,7 @@ interface DashboardData {
 }
 
 export default function DashboardPage() {
-  const { token, user } = useAuth();
+  const { token, user, logout } = useAuth();
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -49,6 +50,12 @@ export default function DashboardPage() {
           },
         });
 
+        if (response.status === 401) {
+          // Token expired or invalid, logout user
+          logout();
+          return;
+        }
+
         if (!response.ok) {
           throw new Error('Failed to fetch dashboard data');
         }
@@ -63,7 +70,7 @@ export default function DashboardPage() {
     };
 
     fetchDashboard();
-  }, [token]);
+  }, [token, logout]);
 
   if (loading) {
     return (
@@ -120,6 +127,12 @@ export default function DashboardPage() {
             >
               View Graph
             </button>
+            <button
+              onClick={logout}
+              className="text-sm bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded transition"
+            >
+              Logout
+            </button>
           </div>
         </div>
 
@@ -151,7 +164,7 @@ export default function DashboardPage() {
 
         {/* Shape Plots */}
         <div className="mb-8">
-          <ShapePlots gstin={user?.email || ''} token={token || ''} />
+          <ShapePlots gstin={data.gstin || user?.email || ''} token={token || ''} />
         </div>
 
         {/* Vendor Risk Table */}

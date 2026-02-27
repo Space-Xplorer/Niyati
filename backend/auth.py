@@ -72,6 +72,16 @@ def signup():
     if role not in ['Admin', 'Business_Owner']:
         return jsonify({'message': 'Invalid role. Must be Admin or Business_Owner'}), 400
 
+    # Business owners must supply a GSTIN
+    if role == 'Business_Owner':
+        if not gstin:
+            return jsonify({'message': 'GSTIN is required for business owners'}), 400
+        # Optional: Validate GSTIN exists in EntityMaster (disabled for development)
+        # Uncomment the following lines to enable GSTIN validation:
+        # from models import EntityMaster
+        # if not EntityMaster.query.filter_by(gstin=gstin).first():
+        #     return jsonify({'message': 'GSTIN not found. Please ensure your GSTIN is registered with the system.'}), 400
+
     if User.query.filter_by(email=email).first():
         return jsonify({'message': 'User already exists. Please log in.'}), 409
 

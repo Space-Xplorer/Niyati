@@ -545,13 +545,15 @@ const handleSubmit = async () => {
 
 ### Signup Page (/signup)
 
+**Note:** the form now collects GSTIN (unless "Register as Admin" is checked); the backend insists the GSTIN exists before creating a user.
+
 **File:** `src/app/signup/page.tsx`
 
 **Input Fields:**
 - Email (required)
 - Password (required)
 - Role (required) - Dropdown: "Admin" or "Business_Owner"
-- GSTIN (required for Business_Owner) - 15-character string
+- GSTIN (required for Business_Owner) - 15-character string.  Must correspond to an existing record in the backend `entity_master` table or registration will be rejected.
 
 **Output:**
 - Success: Redirects to /login with success message

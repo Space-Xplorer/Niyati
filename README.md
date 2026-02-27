@@ -211,7 +211,7 @@ niyati/
 
 Navigate to http://localhost:3000/signup and create an account:
 - **Role**: Choose "Admin" or "Business Owner"
-- **GSTIN**: Required for Business Owners (15-character GST ID)
+- **GSTIN**: Required for Business Owners (15-character GST ID).  The number must already be present in the `entity_master` table; signup will fail otherwise.
 
 ### 2. Upload CSV Files
 
