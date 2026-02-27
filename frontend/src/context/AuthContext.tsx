@@ -32,7 +32,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         if (storedToken && storedUser) {
             setToken(storedToken);
             setUser(JSON.parse(storedUser));
-        } else if (pathname !== '/login' && pathname !== '/signup') {
+        } else if (pathname !== '/login' && pathname !== '/signup' && pathname !== '/') {
+            // Allow access to home page without authentication
             router.push('/login');
         }
     }, [pathname, router]);

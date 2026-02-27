@@ -26,7 +26,7 @@ export default function SignupPage() {
             const response = await fetch(`${url}/api/auth/signup`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, password, role: isAdmin ? 'admin' : 'user' }),
+                body: JSON.stringify({ email, password, role: isAdmin ? 'Admin' : 'Business_Owner' }),
             });
 
             const data = await response.json();
@@ -44,19 +44,19 @@ export default function SignupPage() {
     };
 
     return (
-        <main className="min-h-screen flex items-center justify-center bg-black text-white p-8">
-            <div className="w-full max-w-md bg-gray-900 border border-gray-800 rounded-xl p-8 space-y-6">
+        <main className="min-h-screen flex items-center justify-center p-8" style={{ backgroundColor: '#efefef' }}>
+            <div className="w-full max-w-md bg-white border border-gray-300 rounded-xl p-8 space-y-6 shadow-lg">
                 <div className="text-center">
-                    <h1 className="text-3xl font-bold mb-2 text-emerald-400">Join Niyati</h1>
-                    <p className="text-gray-400">Create a secure account to sync your bots</p>
+                    <h1 className="text-3xl font-bold mb-2" style={{ color: '#005b52' }}>Join Niyati</h1>
+                    <p className="text-gray-600">Create a secure account to sync your bots</p>
                 </div>
 
-                {error && <div className="text-red-400 bg-red-950 p-3 rounded">{error}</div>}
-                {success && <div className="text-emerald-400 bg-emerald-950 p-3 rounded">{success}</div>}
+                {error && <div className="text-red-700 bg-red-100 border border-red-300 p-3 rounded">{error}</div>}
+                {success && <div className="text-green-700 bg-green-100 border border-green-300 p-3 rounded">{success}</div>}
 
                 <form onSubmit={handleSignup} className="space-y-4">
                     <div>
-                        <label className="block text-sm font-medium mb-1">Email</label>
+                        <label className="block text-sm font-medium mb-1" style={{ color: '#005b52' }}>Email</label>
                         <Input
                             type="email"
                             value={email}
@@ -66,7 +66,7 @@ export default function SignupPage() {
                         />
                     </div>
                     <div>
-                        <label className="block text-sm font-medium mb-1">Password</label>
+                        <label className="block text-sm font-medium mb-1" style={{ color: '#005b52' }}>Password</label>
                         <Input
                             type="password"
                             value={password}
@@ -81,17 +81,18 @@ export default function SignupPage() {
                             id="isAdmin"
                             checked={isAdmin}
                             onChange={(e) => setIsAdmin(e.target.checked)}
-                            className="w-4 h-4 bg-gray-900 border-gray-700 rounded text-emerald-500 focus:ring-emerald-500"
+                            className="w-4 h-4 border-gray-400 rounded focus:ring-2"
+                            style={{ accentColor: '#dbf226' }}
                         />
-                        <label htmlFor="isAdmin" className="text-sm font-medium text-gray-300">
+                        <label htmlFor="isAdmin" className="text-sm font-medium text-gray-700">
                             Register as Admin (For testing purposes)
                         </label>
                     </div>
                     <Button type="submit" className="w-full" isLoading={isLoading}>Sign Up</Button>
                 </form>
 
-                <p className="text-center text-gray-500 text-sm mt-4">
-                    Already have an account? <Link href="/login" className="text-emerald-400 hover:text-emerald-300 transition-colors">Log in</Link>
+                <p className="text-center text-gray-600 text-sm mt-4">
+                    Already have an account? <Link href="/login" className="font-medium hover:underline" style={{ color: '#005b52' }}>Log in</Link>
                 </p>
             </div>
         </main>

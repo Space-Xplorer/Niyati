@@ -6,6 +6,7 @@ from datetime import datetime, timedelta
 from flask_bcrypt import Bcrypt
 from database import db
 from models import User
+from rbac import check_access_permission, rbac_error_handler
 
 auth_bp = Blueprint('auth', __name__)
 bcrypt = Bcrypt()
@@ -27,11 +28,16 @@ def token_required(f):
             return jsonify({'message': 'Token is missing!'}), 401
 
         try:
-            # Decode token
+            # Decode token and extract user_id, role, gstin
             data = jwt.decode(token, get_secret_key(), algorithms=["HS256"])
             current_user = User.query.filter_by(id=data['user_id']).first()
             if not current_user:
                 return jsonify({'message': 'Invalid token (user not found)!'}), 401
+            
+            # Attach role and gstin to current_user for easy access
+            current_user.token_role = data.get('role')
+            current_user.token_gstin = data.get('gstin')
+            
         except jwt.ExpiredSignatureError:
             return jsonify({'message': 'Token has expired!'}), 401
         except Exception as e:
@@ -46,7 +52,7 @@ def admin_required(f):
     @wraps(f)
     @token_required
     def decorated(current_user, *args, **kwargs):
-        if current_user.role != 'admin':
+        if current_user.role != 'Admin':
             return jsonify({'message': 'Admin access required!'}), 403
         return f(current_user, *args, **kwargs)
     return decorated
@@ -59,13 +65,18 @@ def signup():
     
     email = data['email']
     password = data['password']
+    role = data.get('role', 'Business_Owner')  # Default to Business_Owner
+    gstin = data.get('gstin', None)
+
+    # Validate role is Admin or Business_Owner
+    if role not in ['Admin', 'Business_Owner']:
+        return jsonify({'message': 'Invalid role. Must be Admin or Business_Owner'}), 400
 
     if User.query.filter_by(email=email).first():
         return jsonify({'message': 'User already exists. Please log in.'}), 409
 
     hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
-    role = data.get('role', 'user')
-    new_user = User(email=email, password_hash=hashed_password, role=role)
+    new_user = User(email=email, password_hash=hashed_password, role=role, gstin=gstin)
     
     try:
         db.session.add(new_user)
@@ -74,6 +85,11 @@ def signup():
     except Exception as e:
         db.session.rollback()
         return jsonify({'message': f'Error saving user: {str(e)}'}), 500
+
+@auth_bp.route('/register', methods=['POST'])
+def register():
+    """Alias for signup endpoint to match requirements specification"""
+    return signup()
 
 @auth_bp.route('/login', methods=['POST'])
 def login():
@@ -86,14 +102,30 @@ def login():
     if not user or not bcrypt.check_password_hash(user.password_hash, data['password']):
         return jsonify({'message': 'Invalid credentials!'}), 401
 
-    # Generate JWT
+    # Generate JWT with user_id, role, and gstin claims
     token = jwt.encode({
         'user_id': user.id,
+        'role': user.role,
+        'gstin': user.gstin,
         'exp': datetime.utcnow() + timedelta(hours=24) # Token expires in 24 hours
     }, get_secret_key(), algorithm="HS256")
 
     return jsonify({
         'message': 'Login successful',
         'token': token,
-        'user': {'id': user.id, 'email': user.email, 'role': user.role}
+        'user': {'id': user.id, 'email': user.email, 'role': user.role, 'gstin': user.gstin}
     }), 200
+
+
+def business_owner_or_admin_required(f):
+    """
+    Decorator that ensures user is authenticated and has either Admin or Business_Owner role.
+    Passes current_user to the wrapped function.
+    """
+    @wraps(f)
+    @token_required
+    def decorated(current_user, *args, **kwargs):
+        if current_user.role not in ['Admin', 'Business_Owner']:
+            return jsonify({'message': 'Access denied. Admin or Business_Owner role required.'}), 403
+        return f(current_user, *args, **kwargs)
+    return decorated

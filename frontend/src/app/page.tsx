@@ -1,163 +1,279 @@
 'use client';
 
-import { useState } from 'react';
-import { Input } from '@/components/Input';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/Button';
-import { useAuth } from '@/context/AuthContext';
 
 export default function Home() {
-  const [prompt, setPrompt] = useState('');
-  const [result, setResult] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [adminData, setAdminData] = useState<any>(null);
-  const { token, logout, user } = useAuth();
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!prompt.trim()) return;
-
-    setIsLoading(true);
-    setError(null);
-    setResult(null);
-
-    try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:5000';
-      const response = await fetch(`${apiUrl}/api/generate`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ prompt }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Something went wrong');
-      }
-
-      setResult(data.data);
-    } catch (err: any) {
-      setError(err.message || 'Failed to connect to backend.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const fetchAdminData = async () => {
-    try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:5000';
-      const response = await fetch(`${apiUrl}/api/admin/data`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error || data.message || 'Failed to fetch admin data');
-      setAdminData(data);
-    } catch (err: any) {
-      alert(err.message);
-    }
-  };
+  const router = useRouter();
 
   return (
-    <main className="min-h-screen bg-black text-white p-8 font-[family-name:var(--font-geist-sans)]">
-      <div className="max-w-3xl mx-auto space-y-8">
-
-        {/* Header */}
-        <div className="relative space-y-4 text-center pb-8 border-b border-gray-800">
-          {user && (
-            <div className="absolute top-0 right-0 flex flex-col items-end space-y-2">
-              <div className="flex items-center space-x-4">
-                <span className="text-gray-400 text-sm hidden sm:inline-block">
-                  Logged in as {user.email}
-                  <span className={`ml-2 px-2 py-0.5 rounded text-xs font-bold ${user.role === 'admin' ? 'bg-red-500/20 text-red-400' : 'bg-blue-500/20 text-blue-400'}`}>
-                    {user.role?.toUpperCase() || 'USER'}
-                  </span>
-                </span>
-                <button
-                  onClick={logout}
-                  className="text-xs bg-gray-800 hover:bg-gray-700 text-white px-3 py-1.5 rounded transition"
-                >
-                  Logout
-                </button>
-              </div>
-              {user.role === 'admin' && (
-                <button
-                  onClick={fetchAdminData}
-                  className="text-xs bg-red-600/20 hover:bg-red-600/40 text-red-400 border border-red-900/50 px-3 py-1.5 rounded transition"
-                >
-                  Test Admin Access
-                </button>
-              )}
-            </div>
-          )}
-
-          <h1 className="text-5xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-emerald-400">
+    <main className="min-h-screen" style={{ backgroundColor: '#efefef' }}>
+      {/* Navigation */}
+      <nav className="border-b" style={{ borderColor: '#d0d0d0', backgroundColor: '#ffffff' }}>
+        <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+          <h1 className="text-2xl font-bold" style={{ color: '#005b52' }}>
             Niyati
           </h1>
-          <p className="text-gray-400 text-lg">
-            Rapid prototyping with Next.js, Tailwind, and a Flask AI backend.
-          </p>
+          <div className="flex gap-3">
+            <button
+              onClick={() => router.push('/login')}
+              className="px-4 py-2 rounded-lg font-medium transition-all"
+              style={{
+                backgroundColor: 'transparent',
+                color: '#005b52',
+                border: '2px solid #005b52'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = '#005b52';
+                e.currentTarget.style.color = '#ffffff';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'transparent';
+                e.currentTarget.style.color = '#005b52';
+              }}
+            >
+              Login
+            </button>
+            <Button onClick={() => router.push('/signup')}>
+              Get Started
+            </Button>
+          </div>
         </div>
+      </nav>
 
-        {/* Input Form */}
-        <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-4">
-          <Input
-            value={prompt}
-            onChange={(e) => setPrompt(e.target.value)}
-            placeholder="Enter your prompt for the AI..."
-            autoFocus
-          />
-          <Button type="submit" isLoading={isLoading}>
-            Generate
+      {/* Hero Section */}
+      <section className="max-w-7xl mx-auto px-6 py-20 text-center">
+        <h2 className="text-5xl md:text-6xl font-extrabold mb-6" style={{ color: '#005b52' }}>
+          Real-time GST Intelligence & Fraud Detection
+        </h2>
+        <p className="text-xl md:text-2xl mb-8" style={{ color: '#1a1a1a', opacity: 0.8 }}>
+          A Shadow Mirror of India's GST Network powered by Knowledge Graphs and Explainable AI
+        </p>
+        <div className="flex gap-4 justify-center">
+          <Button onClick={() => router.push('/signup')}>
+            Start Free Trial
           </Button>
-        </form>
+          <button
+            onClick={() => router.push('/login')}
+            className="px-6 py-3 rounded-lg font-medium transition-all"
+            style={{
+              backgroundColor: 'transparent',
+              color: '#005b52',
+              border: '2px solid #005b52'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = '#005b52';
+              e.currentTarget.style.color = '#ffffff';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = 'transparent';
+              e.currentTarget.style.color = '#005b52';
+            }}
+          >
+            View Demo
+          </button>
+        </div>
+      </section>
 
-        {/* Status / Results */}
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-6 min-h-[300px]">
-          {isLoading && (
-            <div className="flex flex-col items-center justify-center h-full text-gray-500 space-y-4 pt-16">
-              <div className="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-              <p>Analyzing and calling backend...</p>
+      {/* Features Section */}
+      <section className="max-w-7xl mx-auto px-6 py-16">
+        <h3 className="text-3xl font-bold text-center mb-12" style={{ color: '#005b52' }}>
+          Powered by Five Intelligent Agents
+        </h3>
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {/* Agent 1 */}
+          <div className="p-6 rounded-xl" style={{ backgroundColor: '#ffffff', border: '1px solid #d0d0d0' }}>
+            <div className="w-12 h-12 rounded-lg mb-4 flex items-center justify-center" style={{ backgroundColor: '#dbf226' }}>
+              <span className="text-2xl font-bold" style={{ color: '#005b52' }}>1</span>
             </div>
-          )}
+            <h4 className="text-xl font-bold mb-2" style={{ color: '#005b52' }}>Ingestion Wrangler</h4>
+            <p style={{ color: '#1a1a1a', opacity: 0.7 }}>
+              Validates and cleans GST transaction data from six CSV sources with automated feature engineering
+            </p>
+          </div>
 
-          {error && (
-            <div className="text-red-400 bg-red-950/30 p-4 rounded-lg border border-red-900 mt-4">
-              <span className="font-semibold">Error:</span> {error}
+          {/* Agent 2 */}
+          <div className="p-6 rounded-xl" style={{ backgroundColor: '#ffffff', border: '1px solid #d0d0d0' }}>
+            <div className="w-12 h-12 rounded-lg mb-4 flex items-center justify-center" style={{ backgroundColor: '#dbf226' }}>
+              <span className="text-2xl font-bold" style={{ color: '#005b52' }}>2</span>
             </div>
-          )}
+            <h4 className="text-xl font-bold mb-2" style={{ color: '#005b52' }}>Graph Architect</h4>
+            <p style={{ color: '#1a1a1a', opacity: 0.7 }}>
+              Builds a comprehensive Neo4j knowledge graph connecting taxpayers, invoices, and e-way bills
+            </p>
+          </div>
 
-          {!isLoading && !error && result && (
-            <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-500 mt-4">
-              <h3 className="text-gray-400 uppercase tracking-widest text-xs font-semibold">Response</h3>
-              <div className="text-gray-100 whitespace-pre-wrap leading-relaxed">
-                {result}
+          {/* Agent 3 */}
+          <div className="p-6 rounded-xl" style={{ backgroundColor: '#ffffff', border: '1px solid #d0d0d0' }}>
+            <div className="w-12 h-12 rounded-lg mb-4 flex items-center justify-center" style={{ backgroundColor: '#dbf226' }}>
+              <span className="text-2xl font-bold" style={{ color: '#005b52' }}>3</span>
+            </div>
+            <h4 className="text-xl font-bold mb-2" style={{ color: '#005b52' }}>Risk Detective</h4>
+            <p style={{ color: '#1a1a1a', opacity: 0.7 }}>
+              Detects circular trading patterns, ghost invoices, and spider web networks through graph analysis
+            </p>
+          </div>
+
+          {/* Agent 4 */}
+          <div className="p-6 rounded-xl" style={{ backgroundColor: '#ffffff', border: '1px solid #d0d0d0' }}>
+            <div className="w-12 h-12 rounded-lg mb-4 flex items-center justify-center" style={{ backgroundColor: '#dbf226' }}>
+              <span className="text-2xl font-bold" style={{ color: '#005b52' }}>4</span>
+            </div>
+            <h4 className="text-xl font-bold mb-2" style={{ color: '#005b52' }}>Predictive Analyst</h4>
+            <p style={{ color: '#1a1a1a', opacity: 0.7 }}>
+              Uses Explainable Boosting Machines to predict fraud risk with transparent feature contributions
+            </p>
+          </div>
+
+          {/* Agent 5 */}
+          <div className="p-6 rounded-xl" style={{ backgroundColor: '#ffffff', border: '1px solid #d0d0d0' }}>
+            <div className="w-12 h-12 rounded-lg mb-4 flex items-center justify-center" style={{ backgroundColor: '#dbf226' }}>
+              <span className="text-2xl font-bold" style={{ color: '#005b52' }}>5</span>
+            </div>
+            <h4 className="text-xl font-bold mb-2" style={{ color: '#005b52' }}>Niyati Explainer</h4>
+            <p style={{ color: '#1a1a1a', opacity: 0.7 }}>
+              Generates plain-language audit narratives using LLMs for non-technical stakeholders
+            </p>
+          </div>
+
+          {/* Orchestration */}
+          <div className="p-6 rounded-xl" style={{ backgroundColor: '#005b52', border: '1px solid #005b52' }}>
+            <div className="w-12 h-12 rounded-lg mb-4 flex items-center justify-center" style={{ backgroundColor: '#dbf226' }}>
+              <span className="text-2xl font-bold" style={{ color: '#005b52' }}>⚡</span>
+            </div>
+            <h4 className="text-xl font-bold mb-2" style={{ color: '#dbf226' }}>LangGraph Orchestration</h4>
+            <p style={{ color: '#ffffff', opacity: 0.9 }}>
+              Coordinates all agents in a seamless workflow with real-time observability and error recovery
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Detection Capabilities */}
+      <section className="max-w-7xl mx-auto px-6 py-16">
+        <h3 className="text-3xl font-bold text-center mb-12" style={{ color: '#005b52' }}>
+          What We Detect
+        </h3>
+        <div className="grid md:grid-cols-3 gap-8">
+          <div className="text-center">
+            <div className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center" style={{ backgroundColor: '#dbf226' }}>
+              <span className="text-3xl">🔄</span>
+            </div>
+            <h4 className="text-xl font-bold mb-2" style={{ color: '#005b52' }}>Circular Trading</h4>
+            <p style={{ color: '#1a1a1a', opacity: 0.7 }}>
+              Identifies transaction loops where A → B → C → A to detect ITC fraud schemes
+            </p>
+          </div>
+
+          <div className="text-center">
+            <div className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center" style={{ backgroundColor: '#dbf226' }}>
+              <span className="text-3xl">👻</span>
+            </div>
+            <h4 className="text-xl font-bold mb-2" style={{ color: '#005b52' }}>Ghost Invoices</h4>
+            <p style={{ color: '#1a1a1a', opacity: 0.7 }}>
+              Flags high-value invoices without corresponding e-way bills indicating fake transactions
+            </p>
+          </div>
+
+          <div className="text-center">
+            <div className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center" style={{ backgroundColor: '#dbf226' }}>
+              <span className="text-3xl">🕸️</span>
+            </div>
+            <h4 className="text-xl font-bold mb-2" style={{ color: '#005b52' }}>Spider Web Networks</h4>
+            <p style={{ color: '#1a1a1a', opacity: 0.7 }}>
+              Discovers clusters of entities sharing contact information to uncover shell companies
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Benefits Section */}
+      <section className="max-w-7xl mx-auto px-6 py-16">
+        <div className="rounded-2xl p-12" style={{ backgroundColor: '#005b52' }}>
+          <h3 className="text-3xl font-bold text-center mb-8" style={{ color: '#dbf226' }}>
+            Why Choose Niyati?
+          </h3>
+          <div className="grid md:grid-cols-2 gap-8">
+            <div className="flex gap-4">
+              <div className="flex-shrink-0">
+                <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ backgroundColor: '#dbf226' }}>
+                  <span style={{ color: '#005b52' }}>✓</span>
+                </div>
+              </div>
+              <div>
+                <h4 className="font-bold mb-2" style={{ color: '#ffffff' }}>Explainable AI</h4>
+                <p style={{ color: '#ffffff', opacity: 0.8 }}>
+                  Understand exactly why an entity is flagged with transparent feature contributions
+                </p>
               </div>
             </div>
-          )}
 
-          {!isLoading && !error && !result && (
-            <div className="flex items-center justify-center h-full text-gray-600 pt-16">
-              <p>Your AI results will appear here.</p>
+            <div className="flex gap-4">
+              <div className="flex-shrink-0">
+                <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ backgroundColor: '#dbf226' }}>
+                  <span style={{ color: '#005b52' }}>✓</span>
+                </div>
+              </div>
+              <div>
+                <h4 className="font-bold mb-2" style={{ color: '#ffffff' }}>Role-Based Access</h4>
+                <p style={{ color: '#ffffff', opacity: 0.8 }}>
+                  Admins see everything, business owners see only their data and vendor risks
+                </p>
+              </div>
             </div>
-          )}
-        </div>
 
-        {/* Admin Data Section */}
-        {adminData && (
-          <div className="bg-red-950/20 border border-red-900/50 rounded-xl p-6 mt-8">
-            <h3 className="text-red-400 uppercase tracking-widest text-xs font-bold mb-4">Admin Dashboard Area</h3>
-            <pre className="text-gray-300 text-sm overflow-x-auto bg-black/50 p-4 rounded-lg border border-red-900/30">
-              {JSON.stringify(adminData, null, 2)}
-            </pre>
+            <div className="flex gap-4">
+              <div className="flex-shrink-0">
+                <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ backgroundColor: '#dbf226' }}>
+                  <span style={{ color: '#005b52' }}>✓</span>
+                </div>
+              </div>
+              <div>
+                <h4 className="font-bold mb-2" style={{ color: '#ffffff' }}>Real-Time Monitoring</h4>
+                <p style={{ color: '#ffffff', opacity: 0.8 }}>
+                  Watch agent execution in real-time with Server-Sent Events streaming
+                </p>
+              </div>
+            </div>
+
+            <div className="flex gap-4">
+              <div className="flex-shrink-0">
+                <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ backgroundColor: '#dbf226' }}>
+                  <span style={{ color: '#005b52' }}>✓</span>
+                </div>
+              </div>
+              <div>
+                <h4 className="font-bold mb-2" style={{ color: '#ffffff' }}>PII Protection</h4>
+                <p style={{ color: '#ffffff', opacity: 0.8 }}>
+                  All sensitive data is hashed before storage with SHA-256 encryption
+                </p>
+              </div>
+            </div>
           </div>
-        )}
+        </div>
+      </section>
 
-      </div>
+      {/* CTA Section */}
+      <section className="max-w-4xl mx-auto px-6 py-20 text-center">
+        <h3 className="text-4xl font-bold mb-6" style={{ color: '#005b52' }}>
+          Ready to Detect GST Fraud?
+        </h3>
+        <p className="text-xl mb-8" style={{ color: '#1a1a1a', opacity: 0.8 }}>
+          Join auditors and business owners using Niyati to protect their GST compliance
+        </p>
+        <Button onClick={() => router.push('/signup')}>
+          Create Free Account
+        </Button>
+      </section>
+
+      {/* Footer */}
+      <footer className="border-t py-8" style={{ borderColor: '#d0d0d0', backgroundColor: '#ffffff' }}>
+        <div className="max-w-7xl mx-auto px-6 text-center">
+          <p style={{ color: '#1a1a1a', opacity: 0.6 }}>
+            © 2026 Project Niyati. Real-time GST Intelligence & Fraud Detection Platform.
+          </p>
+        </div>
+      </footer>
     </main>
   );
 }

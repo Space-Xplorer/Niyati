@@ -1,8 +1,43 @@
-flask
-flask-cors
-python-dotenv
-requests
+# Core Framework
+fastapi==0.109.0
+uvicorn[standard]==0.27.0
+pydantic==2.5.3
+python-dotenv==1.0.0
 
-Flask-SQLAlchemy
-Flask-Bcrypt
-PyJWT
+# LangGraph Orchestration
+langgraph==0.0.26
+langchain-core==0.1.23
+langchain-groq==0.0.1
+
+# Database Drivers
+psycopg2-binary==2.9.9
+sqlalchemy==2.0.25
+neo4j==5.16.0
+
+# Machine Learning
+interpret==0.5.1
+pandas==2.1.4
+numpy==1.26.3
+scikit-learn==1.4.0
+
+# Resilience & Monitoring
+circuitbreaker==1.4.0
+sse-starlette==1.8.2
+
+# Authentication
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+python-multipart==0.0.6
+
+# Utilities
+requests==2.31.0
+aiofiles==23.2.1
+
+# Flask (for SQLAlchemy compatibility)
+flask==3.0.0
+flask-sqlalchemy==3.1.1
+flask-bcrypt==1.0.1
+flask-cors==4.0.0
+
+# JWT
+pyjwt==2.8.0

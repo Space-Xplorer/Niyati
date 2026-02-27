@@ -3,8 +3,13 @@ from flask import Flask, jsonify, request
 from flask_cors import CORS
 from dotenv import load_dotenv
 
-# Import our AI agent from the ai_services package
-from ai_services.llm_agent import generate_response
+# Try to import orchestration module, but don't fail if it's not available
+try:
+    from orchestration.llm_agent import execute_workflow_sync
+    ORCHESTRATION_AVAILABLE = True
+except ImportError:
+    ORCHESTRATION_AVAILABLE = False
+    execute_workflow_sync = None
 
 from database import db
 from auth import auth_bp, token_required, admin_required, get_secret_key
@@ -44,6 +49,9 @@ def generate(current_user):
     Generic endpoint to handle inferences using the AI agent.
     Expects JSON payload with at least a 'prompt' field.
     """
+    if not ORCHESTRATION_AVAILABLE:
+        return jsonify({"error": "Orchestration module not available"}), 503
+    
     try:
         data = request.get_json()
         if not data or 'prompt' not in data:
@@ -52,7 +60,8 @@ def generate(current_user):
         user_prompt = data.get('prompt')
         
         # Call the isolated ML/LLM logic
-        ai_result = generate_response(user_prompt)
+        # TODO: Implement proper prompt handling
+        ai_result = {"message": "Orchestration workflow not yet implemented for prompts"}
         
         return jsonify({"data": ai_result})
         
