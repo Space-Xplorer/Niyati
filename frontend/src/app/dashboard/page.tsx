@@ -7,9 +7,10 @@ import { RiskBadge } from '@/components/RiskBadge';
 import { ShapePlots } from '@/components/ShapePlots';
 import { VendorRiskTable } from '@/components/VendorRiskTable';
 import { AgentLogViewer } from '@/components/AgentLogViewer';
+import { AdminDashboard } from '@/components/AdminDashboard';
 
 interface DashboardData {
-  gstin?: string;  // Add GSTIN to dashboard data
+  gstin?: string;
   health_score: number;
   risk_level: 'HIGH_RISK' | 'MEDIUM_RISK' | 'LOW_RISK';
   risk_probability: number;
@@ -30,6 +31,12 @@ interface DashboardData {
     ghost_invoices: number;
     spider_web_involvement: boolean;
   };
+  explanation?: string;
+  fraud_details?: {
+    circular_trade_partners?: string[];
+    ghost_invoice_count?: number;
+    shared_contact_count?: number;
+  };
 }
 
 export default function DashboardPage() {
@@ -38,7 +45,16 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Check if user is admin (case-insensitive)
+  const isAdmin = user?.role?.toLowerCase() === 'admin';
+
   useEffect(() => {
+    // Skip fetching if admin (AdminDashboard handles its own data)
+    if (isAdmin) {
+      setLoading(false);
+      return;
+    }
+
     const fetchDashboard = async () => {
       if (!token) return;
 
@@ -70,7 +86,22 @@ export default function DashboardPage() {
     };
 
     fetchDashboard();
-  }, [token, logout]);
+  }, [token, logout, isAdmin]);
+
+  // Render AdminDashboard for admin users (after hooks, but check loading first)
+  if (isAdmin && user && token) {
+    if (loading) {
+      return (
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+            <p className="mt-4 text-gray-600">Loading admin dashboard...</p>
+          </div>
+        </div>
+      );
+    }
+    return <AdminDashboard token={token} onLogout={logout} />;
+  }
 
   if (loading) {
     return (
@@ -128,6 +159,12 @@ export default function DashboardPage() {
               View Graph
             </button>
             <button
+              onClick={() => window.location.href = '/upload'}
+              className="text-sm bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded transition"
+            >
+              Upload Data
+            </button>
+            <button
               onClick={logout}
               className="text-sm bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded transition"
             >
@@ -166,6 +203,40 @@ export default function DashboardPage() {
         <div className="mb-8">
           <ShapePlots gstin={data.gstin || user?.email || ''} token={token || ''} />
         </div>
+
+        {/* Detailed Explanation */}
+        {data.explanation && (
+          <div className="mb-8">
+            <div className="bg-white rounded-lg shadow p-6">
+              <h2 className="text-lg font-semibold text-gray-900 mb-4">Detailed Risk Assessment</h2>
+              <pre className="whitespace-pre-wrap text-sm text-gray-700 font-mono bg-gray-50 p-4 rounded">
+                {data.explanation}
+              </pre>
+            </div>
+          </div>
+        )}
+
+        {/* Fraud Details */}
+        {data.fraud_details && (data.fraud_details.circular_trade_partners?.length || 0) > 0 && (
+          <div className="mb-8">
+            <div className="bg-red-50 border-2 border-red-200 rounded-lg p-6">
+              <h2 className="text-lg font-semibold text-red-900 mb-4">⚠️ Fraud Alert: Circular Trade Detected</h2>
+              <p className="text-sm text-red-700 mb-3">
+                Your business is involved in circular trading patterns with the following entities:
+              </p>
+              <div className="bg-white rounded p-4">
+                <ul className="list-disc list-inside space-y-1">
+                  {data.fraud_details.circular_trade_partners?.map((partner, idx) => (
+                    <li key={idx} className="text-sm text-gray-900 font-mono">{partner}</li>
+                  ))}
+                </ul>
+              </div>
+              <p className="text-sm text-red-700 mt-3">
+                <strong>Action Required:</strong> Circular trade is a serious fraud indicator. Please review these transactions immediately.
+              </p>
+            </div>
+          </div>
+        )}
 
         {/* Vendor Risk Table */}
         <div className="mb-8">
