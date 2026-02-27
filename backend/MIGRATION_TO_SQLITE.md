@@ -104,7 +104,7 @@ To verify the migration:
 python init_db.py
 
 # Start the application
-python app_fastapi.py
+python main.py
 
 # Test authentication
 curl -X POST http://localhost:8000/auth/register \

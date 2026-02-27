@@ -69,7 +69,7 @@ app.add_middleware(
 flask_app = FlaskApp(__name__)
 flask_app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///niyati.db')
 flask_app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-flask_app.config['SECRET_KEY'] = os.environ.get('JWT_SECRET_KEY', 'my-super-secret-niyati-key')
+flask_app.config['SECRET_KEY'] = os.environ.get('JWT_SECRET', 'my-super-secret-niyati-key')
 db.init_app(flask_app)
 bcrypt = Bcrypt(flask_app)
 
@@ -86,7 +86,7 @@ security = HTTPBearer()
 
 def get_secret_key() -> str:
     """Get JWT secret key from environment"""
-    return os.environ.get('JWT_SECRET_KEY', 'my-super-secret-niyati-key')
+    return os.environ.get('JWT_SECRET', 'my-super-secret-niyati-key')
 
 
 # Pydantic models for request/response validation

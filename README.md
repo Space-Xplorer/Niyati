@@ -122,7 +122,7 @@ Required frontend environment variables:
 ```bash
 cd backend
 source venv/bin/activate  # On Windows: venv\Scripts\activate
-python app_fastapi.py
+python main.py
 ```
 
 **Terminal 2 (Frontend):**
@@ -173,8 +173,7 @@ niyati/
 │   │   └── neo4j_batching.py     # Graph optimization
 │   ├── tests/                    # Test suites
 │   ├── data/                     # Sample CSV files
-│   ├── app.py                    # Flask application
-│   ├── app_fastapi.py            # FastAPI application (main)
+│   ├── main.py                   # FastAPI application (main entry point)
 │   ├── auth.py                   # Authentication & JWT
 │   ├── rbac.py                   # Role-based access control
 │   ├── database.py               # SQLAlchemy setup

@@ -23,7 +23,7 @@ export default function SignupPage() {
 
         try {
             const url = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:5000';
-            const response = await fetch(`${url}/api/auth/signup`, {
+            const response = await fetch(`${url}/auth/register`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, password, role: isAdmin ? 'Admin' : 'Business_Owner' }),

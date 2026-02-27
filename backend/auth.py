@@ -12,7 +12,7 @@ auth_bp = Blueprint('auth', __name__)
 bcrypt = Bcrypt()
 
 def get_secret_key():
-    return os.environ.get('JWT_SECRET_KEY', 'my-super-secret-niyati-key')
+    return os.environ.get('JWT_SECRET', 'my-super-secret-niyati-key')
 
 def token_required(f):
     @wraps(f)

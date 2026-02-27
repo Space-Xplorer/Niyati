@@ -113,7 +113,7 @@ This creates all required PostgreSQL tables and Neo4j constraints.
 ### Development Mode
 
 ```bash
-python app_fastapi.py
+python main.py
 ```
 
 Server runs on http://localhost:8000
@@ -121,7 +121,7 @@ Server runs on http://localhost:8000
 ### Production Mode
 
 ```bash
-uvicorn app_fastapi:app --host 0.0.0.0 --port 8000 --workers 4
+uvicorn main:app --host 0.0.0.0 --port 8000 --workers 4
 ```
 
 ## API Endpoints
