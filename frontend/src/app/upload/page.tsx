@@ -89,6 +89,12 @@ export default function UploadPage() {
         body: formData,
       });
 
+      if (response.status === 401) {
+        // Token expired, redirect to login
+        window.location.href = '/login';
+        return;
+      }
+
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({ message: 'Upload failed' }));
         throw new Error(errorData.message || `Upload failed with status ${response.status}`);

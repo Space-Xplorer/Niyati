@@ -2,9 +2,11 @@
 
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/Button';
+import { useAuth } from '@/context/AuthContext';
 
 export default function Home() {
   const router = useRouter();
+  const { token, user, logout } = useAuth();
 
   return (
     <main className="min-h-screen" style={{ backgroundColor: '#efefef' }}>
@@ -15,28 +17,57 @@ export default function Home() {
             Niyati
           </h1>
           <div className="flex gap-3">
-            <button
-              onClick={() => router.push('/login')}
-              className="px-4 py-2 rounded-lg font-medium transition-all"
-              style={{
-                backgroundColor: 'transparent',
-                color: '#005b52',
-                border: '2px solid #005b52'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = '#005b52';
-                e.currentTarget.style.color = '#ffffff';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'transparent';
-                e.currentTarget.style.color = '#005b52';
-              }}
-            >
-              Login
-            </button>
-            <Button onClick={() => router.push('/signup')}>
-              Get Started
-            </Button>
+            {token ? (
+              <>
+                <button
+                  onClick={() => router.push('/dashboard')}
+                  className="px-4 py-2 rounded-lg font-medium transition-all"
+                  style={{
+                    backgroundColor: 'transparent',
+                    color: '#005b52',
+                    border: '2px solid #005b52'
+                  }}
+                >
+                  Dashboard
+                </button>
+                <button
+                  onClick={logout}
+                  className="px-4 py-2 rounded-lg font-medium transition-all"
+                  style={{
+                    backgroundColor: '#dbf226',
+                    color: '#005b52',
+                    border: '2px solid #dbf226'
+                  }}
+                >
+                  Logout
+                </button>
+              </>
+            ) : (
+              <>
+                <button
+                  onClick={() => router.push('/login')}
+                  className="px-4 py-2 rounded-lg font-medium transition-all"
+                  style={{
+                    backgroundColor: 'transparent',
+                    color: '#005b52',
+                    border: '2px solid #005b52'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = '#005b52';
+                    e.currentTarget.style.color = '#ffffff';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = 'transparent';
+                    e.currentTarget.style.color = '#005b52';
+                  }}
+                >
+                  Login
+                </button>
+                <Button onClick={() => router.push('/signup')}>
+                  Get Started
+                </Button>
+              </>
+            )}
           </div>
         </div>
       </nav>

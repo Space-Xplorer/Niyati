@@ -5,10 +5,12 @@ import { Input } from '@/components/Input';
 import { Button } from '@/components/Button';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { signup as apiSignup } from '@/lib/api';
 
 export default function SignupPage() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [gstin, setGstin] = useState('');
     const [isAdmin, setIsAdmin] = useState(false);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
@@ -22,22 +24,13 @@ export default function SignupPage() {
         setSuccess('');
 
         try {
-            const url = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:5000';
-            const response = await fetch(`${url}/api/auth/signup`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, password, role: isAdmin ? 'Admin' : 'Business_Owner' }),
-            });
-
-            const data = await response.json();
-            if (!response.ok) {
-                throw new Error(data.message || 'Signup failed');
-            }
-
+            const role = isAdmin ? 'Admin' : 'Business_Owner';
+            await apiSignup(email, password, role, isAdmin ? undefined : gstin);
+            
             setSuccess('Registration successful! Redirecting to login...');
             setTimeout(() => router.push('/login'), 2000);
         } catch (err: any) {
-            setError(err.message);
+            setError(err.message || 'Signup failed');
         } finally {
             setIsLoading(false);
         }
@@ -75,6 +68,19 @@ export default function SignupPage() {
                             placeholder="••••••••"
                         />
                     </div>
+                    {!isAdmin && (
+                        <div>
+                            <label className="block text-sm font-medium mb-1" style={{ color: '#005b52' }}>GSTIN</label>
+                            <Input
+                                type="text"
+                                value={gstin}
+                                onChange={(e) => setGstin(e.target.value)}
+                                required
+                                placeholder="15‑character GSTIN"
+                            />
+                        </div>
+                    )}
+
                     <div className="flex items-center space-x-2">
                         <input
                             type="checkbox"

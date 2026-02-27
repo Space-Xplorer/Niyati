@@ -47,7 +47,18 @@ def test_user_registration_with_admin_role(client):
 
 
 def test_user_registration_with_business_owner_role(client):
-    """Test user registration with Business_Owner role and GSTIN"""
+    """Test user registration with Business_Owner role and GSTIN.
+
+    The backend now insists that the provided GSTIN already exists in
+    the ``entity_master`` table.  Insert a dummy record before hitting
+    the signup endpoint to satisfy the constraint.
+    """
+    # create an entity master entry so validation passes
+    from models import EntityMaster
+    with app.app_context():
+        db.session.add(EntityMaster(gstin='27AAPFU0939F1ZV', business_name='Test Co'))
+        db.session.commit()
+
     response = client.post('/api/auth/register',
         json={
             'email': 'owner@test.com',
@@ -79,8 +90,31 @@ def test_user_registration_with_invalid_role(client):
     assert 'Invalid role' in data['message']
 
 
+def test_business_owner_registration_requires_existing_gstin(client):
+    """Attempting to register with a GSTIN not in EntityMaster should fail"""
+    response = client.post('/api/auth/register',
+        json={
+            'email': 'missinggst@test.com',
+            'password': 'owner123',
+            'role': 'Business_Owner',
+            'gstin': '29ZZZZZ9999ZZZ'
+        },
+        content_type='application/json'
+    )
+    
+    assert response.status_code == 400
+    data = json.loads(response.data)
+    assert 'GSTIN not found' in data['message']
+
+
 def test_user_login_returns_jwt_with_claims(client):
     """Test login returns JWT token with role and gstin claims"""
+    # ensure GSTIN exists in entity_master (new requirement)
+    from models import EntityMaster
+    with app.app_context():
+        db.session.add(EntityMaster(gstin='27AAPFU0939F1ZV', business_name='Test Co'))
+        db.session.commit()
+
     # First register a user
     client.post('/api/auth/register',
         json={
@@ -168,6 +202,12 @@ def test_admin_endpoint_with_admin_token(client):
 
 def test_admin_endpoint_with_business_owner_token(client):
     """Test admin endpoint access with Business_Owner role should fail"""
+    # make sure the gstin exists
+    from models import EntityMaster
+    with app.app_context():
+        db.session.add(EntityMaster(gstin='27AAPFU0939F1ZV', business_name='Test Co'))
+        db.session.commit()
+
     # Register business owner
     client.post('/api/auth/register',
         json={

@@ -5,6 +5,7 @@ import { Input } from '@/components/Input';
 import { Button } from '@/components/Button';
 import { useAuth } from '@/context/AuthContext';
 import Link from 'next/link';
+import { login as apiLogin } from '@/lib/api';
 
 export default function LoginPage() {
     const [email, setEmail] = useState('');
@@ -19,21 +20,10 @@ export default function LoginPage() {
         setError('');
 
         try {
-            const url = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:5000';
-            const response = await fetch(`${url}/api/auth/login`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, password }),
-            });
-
-            const data = await response.json();
-            if (!response.ok) {
-                throw new Error(data.message || 'Login failed');
-            }
-
+            const data = await apiLogin(email, password);
             login(data.token, data.user);
         } catch (err: any) {
-            setError(err.message);
+            setError(err.message || 'Login failed');
         } finally {
             setIsLoading(false);
         }
