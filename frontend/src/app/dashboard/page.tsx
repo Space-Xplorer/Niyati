@@ -142,7 +142,7 @@ export default function DashboardPage() {
           <div>
             <h1 className="text-3xl font-bold text-[#04221f]">Trust Dashboard</h1>
             <p className="text-[#005b52]/70 mt-2">
-              {user?.role === 'admin' ? 'Global View' : `GSTIN: ${user?.email}`}
+              GSTIN: {user?.gstin || user?.email}
             </p>
           </div>
           <div className="flex gap-2">
