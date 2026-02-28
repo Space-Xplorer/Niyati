@@ -4,11 +4,11 @@ import React, { useEffect, useState } from 'react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 
 interface ShapePlotData {
-  feature_name: string;
-  contribution_weight: number;
-  feature_value: number;
-  baseline_value: number;
-  direction: 'positive' | 'negative';
+  feature_name?: string;
+  contribution_weight?: number;
+  feature_value?: number;
+  baseline_value?: number;
+  direction?: 'positive' | 'negative';
 }
 
 interface ShapePlotsProps {
@@ -38,7 +38,9 @@ export const ShapePlots: React.FC<ShapePlotsProps> = ({ gstin, token }) => {
         }
 
         const result = await response.json();
-        setShapePlots(result.top_drivers || []);
+        // Backend returns shape_plots (with feature_name/feature_value/baseline_value/contribution_weight)
+        // top_drivers uses different keys (feature/contribution) — not compatible with ShapePlotData
+        setShapePlots(result.shape_plots || []);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An error occurred');
       } finally {
@@ -96,12 +98,16 @@ interface ShapePlotCardProps {
 }
 
 const ShapePlotCard: React.FC<ShapePlotCardProps> = ({ data, rank }) => {
-  const isPositive = data.direction === 'positive';
+  // Infer direction from contribution_weight sign if direction field is missing
+  const inferredDirection: 'positive' | 'negative' =
+    data.direction ?? ((data.contribution_weight ?? 0) >= 0 ? 'positive' : 'negative');
+  const isPositive = inferredDirection === 'positive';
   const color = isPositive ? '#ef4444' : '#10b981'; // red for positive, green for negative
   const arrow = isPositive ? '↑' : '↓';
 
-  // Format feature name for display
-  const formatFeatureName = (name: string) => {
+  // Format feature name for display — guard against undefined/null
+  const formatFeatureName = (name: string | undefined | null): string => {
+    if (!name) return 'Unknown Feature';
     return name
       .split('_')
       .map(word => word.charAt(0).toUpperCase() + word.slice(1))
@@ -133,7 +139,7 @@ const ShapePlotCard: React.FC<ShapePlotCardProps> = ({ data, rank }) => {
           className="text-2xl font-bold"
           style={{ color }}
         >
-          {arrow} {Math.abs(data.contribution_weight * 100).toFixed(1)}%
+          {arrow} {Math.abs((data.contribution_weight ?? 0) * 100).toFixed(1)}%
         </span>
       </div>
 
@@ -146,11 +152,11 @@ const ShapePlotCard: React.FC<ShapePlotCardProps> = ({ data, rank }) => {
       <div className="mb-4 space-y-1">
         <div className="flex justify-between text-xs">
           <span className="text-gray-600">Current Value:</span>
-          <span className="font-medium">{data.feature_value.toFixed(2)}</span>
+          <span className="font-medium">{(data.feature_value ?? 0).toFixed(2)}</span>
         </div>
         <div className="flex justify-between text-xs">
           <span className="text-gray-600">Baseline:</span>
-          <span className="font-medium">{data.baseline_value.toFixed(2)}</span>
+          <span className="font-medium">{(data.baseline_value ?? 0).toFixed(2)}</span>
         </div>
         <div className="flex justify-between text-xs">
           <span className="text-gray-600">Impact:</span>

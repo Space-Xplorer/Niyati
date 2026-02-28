@@ -253,7 +253,8 @@ def create_workflow() -> StateGraph:
     return workflow.compile()
 
 
-async def execute_workflow(csv_files: Dict[str, Any]) -> Dict[str, Any]:
+async def execute_workflow(csv_files: Dict[str, Any], flask_app=None, db=None) -> Dict[str, Any]:
+
     """
     Execute the complete Project Niyati workflow.
     
@@ -300,7 +301,28 @@ async def execute_workflow(csv_files: Dict[str, Any]) -> Dict[str, Any]:
                 'errors': final_state['errors'],
                 'execution_time_seconds': execution_time
             }
-        
+
+        # ----------------------------------------------------------------
+        # Persist workflow results to SQLite so API endpoints can read them
+        # Uses the canonical persistence module from utils/
+        # ----------------------------------------------------------------
+        if flask_app is not None:
+            try:
+                await broadcast_event("Persisting results to database...")
+                from utils.workflow_persistence import persist_workflow_results
+                workflow_result = {
+                    'status': 'success',
+                    'state': final_state,
+                }
+                persist_workflow_results(workflow_result, flask_app)
+                await broadcast_event("Results saved to database successfully")
+            except Exception as persist_err:
+                import logging
+                logging.getLogger(__name__).error(
+                    f"Failed to persist workflow results: {str(persist_err)}", exc_info=True
+                )
+                await broadcast_event(f"WARNING: Results could not be saved to database: {str(persist_err)}")
+
         # Build summary response
         summary = {
             'status': 'success',

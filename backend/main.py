@@ -54,21 +54,29 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# Enable CORS
+# Enable CORS — read allowed origins from environment for production
+_default_origins = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "http://localhost:5000",
+    "http://127.0.0.1:5000",
+]
+_env_origins = os.environ.get("CORS_ORIGINS", "")
+_cors_origins = [o.strip() for o in _env_origins.split(",") if o.strip()] if _env_origins else _default_origins
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",
-        "http://127.0.0.1:3000",
-        "http://localhost:5000",
-        "http://127.0.0.1:5000",
-        "http://localhost:8000",
-        "http://127.0.0.1:8000"
-    ],
+    allow_origins=_cors_origins,
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["Content-Type", "Authorization"],
 )
+
+
+# Health check for Cloud Run / load balancers
+@app.get("/health")
+async def health_check():
+    return {"status": "healthy", "version": "1.0.0"}
 
 # Initialize Flask app for SQLAlchemy (compatibility layer)
 flask_app = FlaskApp(__name__)
@@ -115,6 +123,14 @@ class TokenData(BaseModel):
     user_id: int
     role: str
     gstin: Optional[str]
+
+
+class LiveFileRequest(BaseModel):
+    seller_gstin: str = Field(..., description="Seller GSTIN (15-char)")
+    buyer_gstin: str = Field(..., description="Buyer GSTIN (15-char)")
+    amount: float = Field(..., description="Invoice amount in INR", gt=0)
+    tax: float = Field(0.0, description="Tax amount in INR", ge=0)
+    hsn_code: Optional[str] = Field(None, description="HSN/SAC code")
 
 
 # Dependency: Get current user from JWT token
@@ -279,6 +295,16 @@ async def register(request: RegisterRequest):
             detail="Invalid role. Must be Admin or Business_Owner"
         )
     
+    # Admin registration guard: only allow Admin if no admins exist yet
+    if request.role == 'Admin':
+        with flask_app.app_context():
+            existing_admins = User.query.filter_by(role='Admin').count()
+            if existing_admins > 0:
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="Admin registration is restricted. An admin account already exists."
+                )
+    
     with flask_app.app_context():
         # Check if user already exists
         existing_user = User.query.filter_by(email=request.email).first()
@@ -373,7 +399,7 @@ async def sync_data(
     filing_history: UploadFile = File(...),
     purchase_register: UploadFile = File(...),
     returns_summary: UploadFile = File(...),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(require_admin)
 ):
     """
     POST /sync - Upload 6 CSV files and trigger full workflow.
@@ -412,8 +438,8 @@ async def sync_data(
                     detail=f"Error parsing {name}: {str(e)}"
                 )
         
-        # Execute workflow
-        result = await execute_workflow(csv_files)
+        # Execute workflow — pass flask_app and db so results get persisted to SQLite
+        result = await execute_workflow(csv_files, flask_app=flask_app, db=db)
         
         # Check if workflow failed
         if result.get('status') == 'failed':
@@ -549,84 +575,229 @@ async def pre_audit(
 # TASK 12.5: GET /dashboard Endpoint with RBAC
 # ============================================================================
 
+
+def _safe_float(val, default=0.0):
+    """Safely convert a SQLAlchemy Numeric/Decimal to float."""
+    if val is None:
+        return default
+    try:
+        return float(val)
+    except (TypeError, ValueError):
+        return default
+
+
+def _build_top_drivers(pred):
+    """Build a top-drivers list from a RiskPrediction row."""
+    drivers = []
+    for i in range(1, 4):
+        feat = getattr(pred, f'top_driver_{i}', None)
+        contrib = _safe_float(getattr(pred, f'top_driver_{i}_contribution', None))
+        if feat:
+            drivers.append({
+                "feature": feat,
+                "contribution": contrib,
+                "direction": "positive" if contrib > 0 else "negative"
+            })
+    return drivers
+
+
+def _fetch_vendor_risks_from_neo4j(user_role: str, user_gstin: str | None):
+    """
+    Query Neo4j for vendor/counterparty risk data.
+
+    For Business_Owner: find all counterparty taxpayers connected via invoices.
+    For Admin: find top high-risk vendors across the graph.
+    Returns list of vendor risk dicts.
+    """
+    vendor_risks = []
+    try:
+        from neo4j import GraphDatabase
+
+        neo4j_uri = os.environ.get('NEO4J_URI')
+        neo4j_user = os.environ.get('NEO4J_USER', 'neo4j')
+        neo4j_password = os.environ.get('NEO4J_PASSWORD')
+
+        if not neo4j_uri or not neo4j_password:
+            return vendor_risks
+
+        driver = GraphDatabase.driver(neo4j_uri, auth=(neo4j_user, neo4j_password))
+
+        with driver.session() as session:
+            if user_role == 'Admin':
+                query = """
+                MATCH (t:Taxpayer)
+                WHERE t.risk_level IN ['HIGH_RISK', 'MEDIUM_RISK']
+                RETURN t.gstin AS vendor_gstin,
+                       COALESCE(t.business_name, t.gstin) AS vendor_name,
+                       COALESCE(t.risk_level, 'UNKNOWN') AS risk_level,
+                       COALESCE(t.risk_probability, 0) AS risk_probability,
+                       t.last_transaction_date AS last_transaction_date
+                ORDER BY t.risk_probability DESC
+                LIMIT 20
+                """
+                result = session.run(query)
+            else:
+                query = """
+                MATCH (me:Taxpayer {gstin: $gstin})-[:ISSUED]->(i:Invoice)-[:TO]->(vendor:Taxpayer)
+                RETURN vendor.gstin AS vendor_gstin,
+                       COALESCE(vendor.business_name, vendor.gstin) AS vendor_name,
+                       COALESCE(vendor.risk_level, 'UNKNOWN') AS risk_level,
+                       COALESCE(vendor.risk_probability, 0) AS risk_probability,
+                       vendor.last_transaction_date AS last_transaction_date
+                UNION
+                MATCH (supplier:Taxpayer)-[:ISSUED]->(i:Invoice)-[:TO]->(me:Taxpayer {gstin: $gstin})
+                RETURN supplier.gstin AS vendor_gstin,
+                       COALESCE(supplier.business_name, supplier.gstin) AS vendor_name,
+                       COALESCE(supplier.risk_level, 'UNKNOWN') AS risk_level,
+                       COALESCE(supplier.risk_probability, 0) AS risk_probability,
+                       supplier.last_transaction_date AS last_transaction_date
+                """
+                result = session.run(query, gstin=user_gstin)
+
+            for record in result:
+                vendor_risks.append({
+                    "vendor_gstin": record["vendor_gstin"],
+                    "vendor_name": record["vendor_name"] or record["vendor_gstin"],
+                    "risk_level": record["risk_level"],
+                    "itc_at_risk": round(float(record.get("risk_probability", 0) or 0) * 100000, 2),
+                    "last_transaction_date": record.get("last_transaction_date") or "N/A",
+                })
+
+        driver.close()
+
+    except Exception as e:
+        logger.warning(f"Could not fetch vendor risks from Neo4j: {str(e)}")
+
+    return vendor_risks
+
+
 @app.get("/dashboard")
 async def get_dashboard(current_user: User = Depends(get_current_user)):
     """
-    GET /dashboard - Retrieve dashboard data with RBAC filtering.
-    
-    This endpoint returns health score, risk level, top drivers, vendor risks,
-    and detected patterns. Data is filtered based on user role and GSTIN.
+    GET /dashboard – Retrieve dashboard data with RBAC filtering.
+
+    Admin  → aggregated system-wide view (total taxpayers, risk distribution,
+             fraud pattern entity details, vendor risks from Neo4j).
+    Business_Owner → single-entity view (own GSTIN risk, health, vendors).
     """
     try:
         with flask_app.app_context():
             from models import RiskPrediction, FraudPattern, EngineeredFeatures
-            
-            # Apply RBAC filtering
+
+            # ── RBAC-filtered risk predictions ──────────────────────────
             if current_user.role == 'Admin':
-                # Admin sees all data
                 risk_predictions = RiskPrediction.query.all()
             else:
-                # Business_Owner sees only their GSTIN
-                risk_predictions = RiskPrediction.query.filter_by(gstin=current_user.gstin).all()
-            
-            if not risk_predictions:
-                raise HTTPException(
-                    status_code=status.HTTP_404_NOT_FOUND,
-                    detail="No dashboard data available"
-                )
-            
-            # Get primary risk prediction (first one or user's GSTIN)
-            primary_pred = risk_predictions[0]
-            
-            # Compute health score (Requirement 9.2)
-            health_score = 100 - (float(primary_pred.risk_probability) * 100)
-            
-            # Get top drivers
-            top_drivers = [
-                {
-                    "feature": primary_pred.top_driver_1,
-                    "contribution": float(primary_pred.top_driver_1_contribution),
-                    "direction": "positive" if primary_pred.top_driver_1_contribution > 0 else "negative"
-                },
-                {
-                    "feature": primary_pred.top_driver_2,
-                    "contribution": float(primary_pred.top_driver_2_contribution),
-                    "direction": "positive" if primary_pred.top_driver_2_contribution > 0 else "negative"
-                },
-                {
-                    "feature": primary_pred.top_driver_3,
-                    "contribution": float(primary_pred.top_driver_3_contribution),
-                    "direction": "positive" if primary_pred.top_driver_3_contribution > 0 else "negative"
-                }
-            ]
-            
-            # Get vendor risks
-            # TODO: Implement vendor risk query from database
-            vendor_risks = []
-            
-            # Get patterns
+                risk_predictions = RiskPrediction.query.filter_by(
+                    gstin=current_user.gstin
+                ).all()
+
+            # ── Fraud patterns ──────────────────────────────────────────
             if current_user.role == 'Admin':
                 patterns = FraudPattern.query.all()
             else:
-                patterns = FraudPattern.query.filter(
-                    FraudPattern.gstin_list.contains([current_user.gstin])
-                ).all()
-            
+                patterns = FraudPattern.query.all()
+                # Filter to patterns involving this GSTIN
+                patterns = [
+                    p for p in patterns
+                    if current_user.gstin in (p.gstin_list or [])
+                ]
+
+            # ── Build pattern entity detail lists ───────────────────────
+            circular_entities = []
+            ghost_entities = []
+            spider_entities = []
+
+            for p in patterns:
+                gstins = p.gstin_list or []
+                if p.pattern_type == 'circular_trade':
+                    for idx, g in enumerate(gstins):
+                        partner = gstins[(idx + 1) % len(gstins)] if len(gstins) > 1 else 'N/A'
+                        circular_entities.append({
+                            "gstin": g,
+                            "partner_gstin": partner,
+                            "pattern": "circular_trade",
+                        })
+                elif p.pattern_type == 'ghost_invoice':
+                    meta = p.pattern_metadata or {}
+                    for g in gstins:
+                        ghost_entities.append({
+                            "gstin": g,
+                            "ghost_invoice_count": meta.get("ghost_count", 0),
+                            "pattern": "ghost_invoice",
+                        })
+                elif p.pattern_type == 'spider_web':
+                    meta = p.pattern_metadata or {}
+                    for g in gstins:
+                        spider_entities.append({
+                            "gstin": g,
+                            "shared_contact_count": meta.get("spoke_count",
+                                                              meta.get("cluster_size", 0)),
+                            "pattern": "spider_web",
+                        })
+
             patterns_summary = {
                 "circular_trade": len([p for p in patterns if p.pattern_type == 'circular_trade']),
                 "ghost_invoices": len([p for p in patterns if p.pattern_type == 'ghost_invoice']),
-                "spider_web_involvement": any(p.pattern_type == 'spider_web' for p in patterns)
+                "spider_web_involvement": any(p.pattern_type == 'spider_web' for p in patterns),
+                "circular_entities": circular_entities,
+                "ghost_entities": ghost_entities,
+                "spider_entities": spider_entities,
             }
-            
+
+            # ── Vendor risks from Neo4j ─────────────────────────────────
+            vendor_risks = _fetch_vendor_risks_from_neo4j(
+                current_user.role, current_user.gstin
+            )
+
+            # ── Empty-data handling (return zeros, not 404) ─────────────
+            if not risk_predictions:
+                return {
+                    "gstin": current_user.gstin,
+                    "health_score": 100.0,
+                    "risk_level": "LOW_RISK",
+                    "risk_probability": 0.0,
+                    "top_drivers": [],
+                    "total_taxpayers": 0,
+                    "high_risk_count": 0,
+                    "medium_risk_count": 0,
+                    "low_risk_count": 0,
+                    "vendor_risks": vendor_risks,
+                    "patterns": patterns_summary,
+                    "data_source": "no_data",
+                }
+
+            # ── Aggregated metrics (Admin) or single-entity ─────────────
+            total = len(risk_predictions)
+            high = sum(1 for p in risk_predictions if p.risk_level == 'HIGH_RISK')
+            medium = sum(1 for p in risk_predictions if p.risk_level == 'MEDIUM_RISK')
+            low = total - high - medium
+
+            primary_pred = risk_predictions[0]
+            top_drivers = _build_top_drivers(primary_pred)
+
+            if current_user.role == 'Admin':
+                # Average health score across all entities
+                avg_prob = sum(_safe_float(p.risk_probability) for p in risk_predictions) / max(total, 1)
+                health_score = round(100 - avg_prob * 100, 2)
+            else:
+                health_score = round(100 - _safe_float(primary_pred.risk_probability) * 100, 2)
+
             return {
-                "health_score": round(health_score, 2),
+                "gstin": primary_pred.gstin,
+                "health_score": health_score,
                 "risk_level": primary_pred.risk_level,
-                "risk_probability": float(primary_pred.risk_probability),
+                "risk_probability": _safe_float(primary_pred.risk_probability),
                 "top_drivers": top_drivers,
+                "total_taxpayers": total,
+                "high_risk_count": high,
+                "medium_risk_count": medium,
+                "low_risk_count": low,
                 "vendor_risks": vendor_risks,
-                "patterns": patterns_summary
+                "patterns": patterns_summary,
+                "data_source": "sqlite" if not vendor_risks else "hybrid",
             }
-            
+
     except HTTPException:
         raise
     except Exception as e:
@@ -766,10 +937,14 @@ async def get_risk_details(
             risk_pred = RiskPrediction.query.filter_by(gstin=gstin).first()
             
             if not risk_pred:
-                raise HTTPException(
-                    status_code=status.HTTP_404_NOT_FOUND,
-                    detail=f"No risk data found for GSTIN {gstin}"
-                )
+                return {
+                    "gstin": gstin,
+                    "risk_level": "UNKNOWN",
+                    "risk_probability": 0.0,
+                    "top_drivers": [],
+                    "shape_plots": [],
+                    "data_source": "no_data"
+                }
             
             # Get shape plots
             shape_plots = ShapePlot.query.filter_by(gstin=gstin).all()
@@ -786,10 +961,16 @@ async def get_risk_details(
                     "y_values": plot.y_values   # JSON array
                 })
             
+            # Get audit narrative
+            from models import AuditNarrative
+            audit_narrative = AuditNarrative.query.filter_by(gstin=gstin).order_by(AuditNarrative.generated_at.desc()).first()
+            narrative_text = audit_narrative.narrative_text if audit_narrative else "No detailed audit narrative available for this vendor."
+
             return {
                 "gstin": gstin,
                 "risk_level": risk_pred.risk_level,
                 "risk_probability": float(risk_pred.risk_probability),
+                "narrative": narrative_text,
                 "top_drivers": [
                     {
                         "feature": risk_pred.top_driver_1,
@@ -818,6 +999,224 @@ async def get_risk_details(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Error retrieving risk details"
         )
+
+
+# ============================================================================
+# LIVE INJECTION: POST /api/v1/live-file
+# ============================================================================
+
+@app.post("/api/v1/live-file")
+async def process_live_filing(
+    payload: LiveFileRequest
+):
+    """
+    POST /api/v1/live-file — Simulate a government portal filing.
+
+    1. Injects the invoice into Neo4j (MERGE taxpayers, CREATE invoice)
+    2. Runs cycle detection to check for circular trading
+    3. Computes a heuristic EBM risk score on the new transaction
+    4. Persists the invoice to SQLite
+    5. Returns full result for frontend to animate
+    """
+    import random
+    import hashlib
+
+    doc_no = f"INV-LIVE-{int(datetime.now().timestamp())}"
+    irn = hashlib.sha256(doc_no.encode()).hexdigest()[:32]
+    timestamp = datetime.now().isoformat()
+
+    is_circular = False
+    cycle_path: list = []
+    neo4j_injected = False
+
+    # ── 1. Inject into Neo4j ────────────────────────────────────────────
+    try:
+        from neo4j import GraphDatabase
+
+        neo4j_uri = os.environ.get('NEO4J_URI')
+        neo4j_user_env = os.environ.get('NEO4J_USER', 'neo4j')
+        neo4j_password = os.environ.get('NEO4J_PASSWORD')
+
+        if neo4j_uri and neo4j_password:
+            driver = GraphDatabase.driver(
+                neo4j_uri, auth=(neo4j_user_env, neo4j_password)
+            )
+
+            with driver.session() as session:
+                # MERGE taxpayer nodes, CREATE invoice node & relationships
+                inject_query = """
+                MERGE (s:Taxpayer {gstin: $seller})
+                  ON CREATE SET s.business_name = $seller, s.risk_level = 'UNKNOWN'
+                MERGE (b:Taxpayer {gstin: $buyer})
+                  ON CREATE SET b.business_name = $buyer, b.risk_level = 'UNKNOWN'
+                CREATE (i:Invoice {
+                    irn: $irn, doc_no: $doc_no,
+                    amt: $amt, tax: $tax,
+                    hsn: $hsn, timestamp: datetime()
+                })
+                MERGE (s)-[:ISSUED]->(i)
+                MERGE (i)-[:TO]->(b)
+                RETURN i.irn AS irn
+                """
+                session.run(
+                    inject_query,
+                    seller=payload.seller_gstin,
+                    buyer=payload.buyer_gstin,
+                    irn=irn,
+                    doc_no=doc_no,
+                    amt=payload.amount,
+                    tax=payload.tax,
+                    hsn=payload.hsn_code or '',
+                )
+                neo4j_injected = True
+
+                # ── 2. Cycle detection ──────────────────────────────────
+                cycle_query = """
+                MATCH p=(s:Taxpayer {gstin: $seller})
+                      -[:ISSUED|TO*3..8]->
+                      (s)
+                WITH p LIMIT 1
+                RETURN [n IN nodes(p) | CASE
+                    WHEN n:Taxpayer THEN n.gstin
+                    WHEN n:Invoice  THEN n.doc_no
+                    ELSE toString(id(n))
+                END] AS cycle_path
+                """
+                cycle_result = session.run(
+                    cycle_query, seller=payload.seller_gstin
+                )
+                for record in cycle_result:
+                    is_circular = True
+                    cycle_path = record['cycle_path']
+                    break
+
+            driver.close()
+
+    except Exception as e:
+        logger.warning(f"Neo4j live injection warning: {str(e)}")
+
+    # ── 3. Heuristic EBM risk scoring ───────────────────────────────────
+    #    Simulates an Explainable Boosting Machine local explanation.
+    #    Uses the invoice attributes to produce a realistic risk vector.
+
+    base_risk = 0.15  # baseline risk for any new transaction
+
+    # Driver 1 — Payment gap anomaly (high amounts are riskier)
+    amount_factor = min(payload.amount / 500000, 1.0)  # normalize to 5L
+    payment_gap_contrib = round(amount_factor * 0.30, 4)
+
+    # Driver 2 — Self-dealing / related-party flag
+    self_deal_contrib = 0.0
+    if payload.seller_gstin[:2] == payload.buyer_gstin[:2]:
+        self_deal_contrib = 0.12  # same-state trade slightly riskier
+    if payload.seller_gstin == payload.buyer_gstin:
+        self_deal_contrib = 0.45  # self-invoicing — very suspicious
+
+    # Driver 3 — Circular trade amplifier
+    circular_contrib = 0.35 if is_circular else 0.0
+
+    # Driver 4 — Tax ratio anomaly
+    expected_tax_ratio = 0.18  # 18% GST
+    actual_tax_ratio = payload.tax / max(payload.amount, 1)
+    tax_anomaly_contrib = round(abs(actual_tax_ratio - expected_tax_ratio) * 0.8, 4)
+
+    risk_score = min(
+        base_risk + payment_gap_contrib + self_deal_contrib
+        + circular_contrib + tax_anomaly_contrib,
+        0.99
+    )
+    risk_score = round(risk_score, 4)
+
+    if risk_score >= 0.7:
+        risk_level = 'HIGH_RISK'
+    elif risk_score >= 0.4:
+        risk_level = 'MEDIUM_RISK'
+    else:
+        risk_level = 'LOW_RISK'
+
+    top_drivers = [
+        {"feature": "payment_gap_anomaly", "contribution": payment_gap_contrib,
+         "direction": "positive"},
+        {"feature": "circular_trade_flag", "contribution": circular_contrib,
+         "direction": "positive" if circular_contrib > 0 else "neutral"},
+        {"feature": "tax_ratio_anomaly", "contribution": tax_anomaly_contrib,
+         "direction": "positive"},
+    ]
+    if self_deal_contrib > 0:
+        top_drivers.insert(1, {
+            "feature": "self_dealing_flag", "contribution": self_deal_contrib,
+            "direction": "positive"
+        })
+    top_drivers.sort(key=lambda d: d['contribution'], reverse=True)
+    top_drivers = top_drivers[:3]
+
+    # ── 4. Generate audit trail message ─────────────────────────────────
+    if is_circular:
+        audit_trail = (
+            f"⚠️ CIRCULAR TRADE DETECTED. This filing from {payload.seller_gstin} "
+            f"to {payload.buyer_gstin} completes a transaction loop: "
+            f"{' → '.join(cycle_path[:6])}. "
+            f"EBM risk score: {risk_score:.0%}. Flagged for immediate review."
+        )
+    elif risk_level == 'HIGH_RISK':
+        audit_trail = (
+            f"Filing processed but flagged HIGH RISK (score: {risk_score:.0%}). "
+            f"Top driver: {top_drivers[0]['feature']} "
+            f"(contribution: {top_drivers[0]['contribution']:.2f}). "
+            f"Manual audit recommended."
+        )
+    elif risk_level == 'MEDIUM_RISK':
+        audit_trail = (
+            f"Filing processed. Medium risk detected (score: {risk_score:.0%}). "
+            f"Monitoring anomaly in {top_drivers[0]['feature']}."
+        )
+    else:
+        audit_trail = (
+            f"Filing processed successfully. Low risk (score: {risk_score:.0%}). "
+            f"No anomalies detected."
+        )
+
+    # ── 5. Persist to SQLite ────────────────────────────────────────────
+    try:
+        with flask_app.app_context():
+            from models import RawInvoice
+            from datetime import date
+
+            new_invoice = RawInvoice(
+                irn=irn,
+                seller_gstin=payload.seller_gstin,
+                buyer_gstin=payload.buyer_gstin,
+                invoice_value=payload.amount + payload.tax,
+                invoice_date=date.today(),
+                doc_no=doc_no,
+            )
+            db.session.add(new_invoice)
+            db.session.commit()
+    except Exception as e:
+        logger.warning(f"SQLite persist warning for live filing: {str(e)}")
+
+    logger.info(
+        f"Live filing: {doc_no} | {payload.seller_gstin} → {payload.buyer_gstin} "
+        f"| ₹{payload.amount:,.2f} | risk={risk_score:.2%} | circular={is_circular}"
+    )
+
+    return {
+        "status": "success",
+        "new_invoice_id": doc_no,
+        "irn": irn,
+        "seller_gstin": payload.seller_gstin,
+        "buyer_gstin": payload.buyer_gstin,
+        "amount": payload.amount,
+        "tax": payload.tax,
+        "risk_score": risk_score,
+        "risk_level": risk_level,
+        "is_circular": is_circular,
+        "cycle_path": cycle_path,
+        "audit_trail": audit_trail,
+        "top_drivers": top_drivers,
+        "neo4j_injected": neo4j_injected,
+        "timestamp": timestamp,
+    }
 
 
 if __name__ == "__main__":

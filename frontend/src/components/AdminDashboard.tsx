@@ -69,9 +69,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ token, onLogout 
 
       console.log('Admin dashboard data received:', result);
 
+      const totalTaxpayers = result.total_taxpayers || 0;
+
       setMetrics({
-        overall_health_score: result.health_score || 75,
-        total_taxpayers: result.total_taxpayers || 0,
+        overall_health_score: result.health_score ?? 0,
+        total_taxpayers: totalTaxpayers,
         high_risk_count: result.high_risk_count || 0,
         medium_risk_count: result.medium_risk_count || 0,
         low_risk_count: result.low_risk_count || 0,
@@ -85,7 +87,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ token, onLogout 
         },
         recent_activity: {
           last_ingestion: new Date().toISOString(),
-          records_processed_today: result.total_taxpayers || 0,
+          records_processed_today: totalTaxpayers,
           alerts_generated_today: result.high_risk_count || 0,
         },
         data_source: result.data_source || 'unknown',
@@ -202,19 +204,19 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ token, onLogout 
             <RiskCard
               title="High Risk"
               count={metrics.high_risk_count}
-              percentage={(metrics.high_risk_count / metrics.total_taxpayers * 100).toFixed(1)}
+              percentage={metrics.total_taxpayers > 0 ? (metrics.high_risk_count / metrics.total_taxpayers * 100).toFixed(1) : '0.0'}
               color="red"
             />
             <RiskCard
               title="Medium Risk"
               count={metrics.medium_risk_count}
-              percentage={(metrics.medium_risk_count / metrics.total_taxpayers * 100).toFixed(1)}
+              percentage={metrics.total_taxpayers > 0 ? (metrics.medium_risk_count / metrics.total_taxpayers * 100).toFixed(1) : '0.0'}
               color="yellow"
             />
             <RiskCard
               title="Low Risk"
               count={metrics.low_risk_count}
-              percentage={(metrics.low_risk_count / metrics.total_taxpayers * 100).toFixed(1)}
+              percentage={metrics.total_taxpayers > 0 ? (metrics.low_risk_count / metrics.total_taxpayers * 100).toFixed(1) : '0.0'}
               color="green"
             />
           </div>

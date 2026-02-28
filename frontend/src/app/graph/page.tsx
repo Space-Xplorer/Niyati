@@ -4,14 +4,15 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import dynamic from 'next/dynamic';
 
-// Dynamically import ForceGraph2D (2D-only package, no VR dependencies)
+// Dynamically import ForceGraph2D from the 2D-only package (react-force-graph-2d)
+// react-force-graph-2d exports the component as its default export
 const ForceGraph2D = dynamic(
-  () => import('react-force-graph').then(mod => mod.ForceGraph2D),
+  () => import('react-force-graph-2d'),
   {
     ssr: false,
     loading: () => (
       <div className="flex items-center justify-center h-full">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#005b52]"></div>
       </div>
     )
   }
@@ -95,7 +96,7 @@ export default function GraphPage() {
   const detectCycles = useCallback((nodes: GraphNode[], edges: GraphEdge[]) => {
     const cycleNodes = new Set<string>();
     const adjacencyList = new Map<string, string[]>();
-    
+
     // Build adjacency list
     edges.forEach(edge => {
       if (!adjacencyList.has(edge.source)) {
@@ -103,17 +104,17 @@ export default function GraphPage() {
       }
       adjacencyList.get(edge.source)!.push(edge.target);
     });
-    
+
     // DFS to detect cycles
     const visited = new Set<string>();
     const recStack = new Set<string>();
     const currentPath: string[] = [];
-    
+
     const dfs = (nodeId: string): boolean => {
       visited.add(nodeId);
       recStack.add(nodeId);
       currentPath.push(nodeId);
-      
+
       const neighbors = adjacencyList.get(nodeId) || [];
       for (const neighbor of neighbors) {
         if (!visited.has(neighbor)) {
@@ -130,25 +131,25 @@ export default function GraphPage() {
           return true;
         }
       }
-      
+
       recStack.delete(nodeId);
       currentPath.pop();
       return false;
     };
-    
+
     // Check all nodes for cycles
     nodes.forEach(node => {
       if (!visited.has(node.id)) {
         dfs(node.id);
       }
     });
-    
+
     return cycleNodes;
   }, []);
 
   // Detect cycles when data loads
   const [cycleNodes, setCycleNodes] = useState<Set<string>>(new Set());
-  
+
   useEffect(() => {
     if (data && data.nodes && data.edges) {
       const cycles = detectCycles(data.nodes, data.edges);
@@ -159,7 +160,7 @@ export default function GraphPage() {
 
   // Detect cycle edges
   const [cycleEdges, setCycleEdges] = useState<Set<string>>(new Set());
-  
+
   useEffect(() => {
     if (data && data.edges && cycleNodes.size > 0) {
       const edges = new Set<string>();
@@ -213,7 +214,7 @@ export default function GraphPage() {
       ctx.arc(node.x, node.y, pulseSize, 0, 2 * Math.PI);
       ctx.fillStyle = 'rgba(239, 68, 68, 0.3)'; // Red with transparency
       ctx.fill();
-      
+
       // Draw outer ring for cycle nodes
       ctx.beginPath();
       ctx.arc(node.x, node.y, size + 4, 0, 2 * Math.PI);
@@ -420,8 +421,8 @@ export default function GraphPage() {
                   {hoveredNode.risk_level && (
                     <div className="text-xs">
                       Risk: <span className={`font-medium ${hoveredNode.risk_level === 'HIGH_RISK' ? 'text-red-400' :
-                          hoveredNode.risk_level === 'MEDIUM_RISK' ? 'text-yellow-400' :
-                            'text-green-400'
+                        hoveredNode.risk_level === 'MEDIUM_RISK' ? 'text-yellow-400' :
+                          'text-green-400'
                         }`}>
                         {hoveredNode.risk_level.replace('_', ' ')}
                       </span>
