@@ -53,10 +53,10 @@ export const ShapePlots: React.FC<ShapePlotsProps> = ({ gstin, token }) => {
 
   if (loading) {
     return (
-      <div className="bg-white rounded-lg shadow p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Top Risk Drivers</h2>
+      <div className="bg-[#f7faf9] border border-[#005b52]/10 rounded-3xl shadow-xl p-8">
+        <h2 className="text-xl font-bold text-[#04221f] tracking-wide mb-6">Top Risk Drivers</h2>
         <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-[#005b52]"></div>
         </div>
       </div>
     );
@@ -64,26 +64,29 @@ export const ShapePlots: React.FC<ShapePlotsProps> = ({ gstin, token }) => {
 
   if (error) {
     return (
-      <div className="bg-white rounded-lg shadow p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Top Risk Drivers</h2>
-        <p className="text-red-600 text-sm">{error}</p>
+      <div className="bg-[#f7faf9] border border-[#005b52]/10 rounded-3xl shadow-xl p-8">
+        <h2 className="text-xl font-bold text-[#04221f] tracking-wide mb-6">Top Risk Drivers</h2>
+        <p className="text-red-500 text-sm font-medium">{error}</p>
       </div>
     );
   }
 
   if (shapePlots.length === 0) {
     return (
-      <div className="bg-white rounded-lg shadow p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Top Risk Drivers</h2>
-        <p className="text-gray-600 text-sm">No risk driver data available</p>
+      <div className="bg-[#f7faf9] border border-[#005b52]/10 rounded-3xl shadow-xl p-8">
+        <h2 className="text-xl font-bold text-[#04221f] tracking-wide mb-6">Top Risk Drivers</h2>
+        <p className="text-gray-500 text-sm font-medium">No risk driver data available</p>
       </div>
     );
   }
 
   return (
-    <div className="bg-white rounded-lg shadow p-6">
-      <h2 className="text-lg font-semibold text-gray-900 mb-6">Top Risk Drivers</h2>
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div className="bg-[#f7faf9] border border-[#005b52]/10 rounded-3xl shadow-xl p-8">
+      <div className="flex items-center gap-3 mb-8">
+        <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-xl shadow-sm border border-[#005b52]/5">📊</div>
+        <h2 className="text-xl font-bold text-[#04221f] tracking-wide">Top Risk Drivers</h2>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
         {shapePlots.slice(0, 3).map((plot, index) => (
           <ShapePlotCard key={index} data={plot} rank={index + 1} />
         ))}
@@ -102,7 +105,7 @@ const ShapePlotCard: React.FC<ShapePlotCardProps> = ({ data, rank }) => {
   const inferredDirection: 'positive' | 'negative' =
     data.direction ?? ((data.contribution_weight ?? 0) >= 0 ? 'positive' : 'negative');
   const isPositive = inferredDirection === 'positive';
-  const color = isPositive ? '#ef4444' : '#10b981'; // red for positive, green for negative
+  const color = isPositive ? '#f87171' : '#34d399'; // red-400 for positive, emerald-400 for negative
   const arrow = isPositive ? '↑' : '↓';
 
   // Format feature name for display — guard against undefined/null
@@ -119,7 +122,7 @@ const ShapePlotCard: React.FC<ShapePlotCardProps> = ({ data, rank }) => {
     {
       name: 'Baseline',
       value: data.baseline_value,
-      fill: '#9ca3af',
+      fill: 'rgba(0,91,82,0.1)', // transluscent teal for baseline
     },
     {
       name: 'Current',
@@ -129,14 +132,17 @@ const ShapePlotCard: React.FC<ShapePlotCardProps> = ({ data, rank }) => {
   ];
 
   return (
-    <div className="border border-gray-200 rounded-lg p-4">
+    <div className="bg-white border border-[#005b52]/10 rounded-2xl p-5 hover:shadow-md transition-shadow relative overflow-hidden group">
+      {/* Subtle glow on hover */}
+      <div className="absolute top-0 right-0 w-32 h-32 bg-[#005b52]/5 rounded-full blur-[50px] opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"></div>
+
       {/* Rank badge */}
-      <div className="flex items-center justify-between mb-3">
-        <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-blue-100 text-blue-800 text-xs font-semibold">
-          {rank}
+      <div className="flex items-center justify-between mb-4 relative z-10">
+        <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-[#f7faf9] text-[#005b52] border border-[#005b52]/10 text-sm font-bold shadow-sm">
+          #{rank}
         </span>
         <span
-          className="text-2xl font-bold"
+          className="text-2xl font-bold tracking-tight drop-shadow-sm"
           style={{ color }}
         >
           {arrow} {Math.abs((data.contribution_weight ?? 0) * 100).toFixed(1)}%
@@ -144,48 +150,54 @@ const ShapePlotCard: React.FC<ShapePlotCardProps> = ({ data, rank }) => {
       </div>
 
       {/* Feature name */}
-      <h3 className="text-sm font-semibold text-gray-900 mb-2">
+      <h3 className="text-base font-bold text-[#04221f] mb-4 relative z-10 truncate" title={formatFeatureName(data.feature_name)}>
         {formatFeatureName(data.feature_name)}
       </h3>
 
       {/* Values comparison */}
-      <div className="mb-4 space-y-1">
-        <div className="flex justify-between text-xs">
-          <span className="text-gray-600">Current Value:</span>
-          <span className="font-medium">{(data.feature_value ?? 0).toFixed(2)}</span>
+      <div className="mb-6 space-y-2 relative z-10">
+        <div className="flex justify-between items-center text-sm">
+          <span className="text-[#005b52]/60">Current Value</span>
+          <span className="font-mono text-[#04221f] font-bold bg-[#f7faf9] px-2 py-0.5 rounded">{(data.feature_value ?? 0).toFixed(2)}</span>
         </div>
-        <div className="flex justify-between text-xs">
-          <span className="text-gray-600">Baseline:</span>
-          <span className="font-medium">{(data.baseline_value ?? 0).toFixed(2)}</span>
+        <div className="flex justify-between items-center text-sm">
+          <span className="text-[#005b52]/60">Baseline</span>
+          <span className="font-mono text-[#04221f] font-bold bg-[#f7faf9] px-2 py-0.5 rounded">{(data.baseline_value ?? 0).toFixed(2)}</span>
         </div>
-        <div className="flex justify-between text-xs">
-          <span className="text-gray-600">Impact:</span>
-          <span className="font-medium" style={{ color }}>
-            {isPositive ? 'Increases' : 'Decreases'} Risk
+        <div className="flex justify-between items-center text-sm pt-2 border-t border-[#005b52]/10">
+          <span className="text-[#005b52]/60">Impact Indicator</span>
+          <span className="font-medium px-2 py-0.5 rounded text-xs uppercase tracking-wider font-bold" style={{ backgroundColor: `${color}20`, color, borderColor: `${color}40`, borderWidth: '1px' }}>
+            {isPositive ? 'Risk ↑' : 'Risk ↓'}
           </span>
         </div>
       </div>
 
       {/* Bar chart */}
-      <ResponsiveContainer width="100%" height={120}>
-        <BarChart data={chartData}>
-          <XAxis dataKey="name" tick={{ fontSize: 11 }} />
-          <YAxis tick={{ fontSize: 11 }} />
-          <Tooltip
-            contentStyle={{
-              backgroundColor: '#fff',
-              border: '1px solid #e5e7eb',
-              borderRadius: '0.375rem',
-              fontSize: '12px',
-            }}
-          />
-          <Bar dataKey="value" radius={[4, 4, 0, 0]}>
-            {chartData.map((entry, index) => (
-              <Cell key={`cell-${index}`} fill={entry.fill} />
-            ))}
-          </Bar>
-        </BarChart>
-      </ResponsiveContainer>
+      <div className="relative z-10">
+        <ResponsiveContainer width="100%" height={100}>
+          <BarChart data={chartData} margin={{ top: 10, right: 0, left: -20, bottom: 0 }}>
+            <XAxis dataKey="name" tick={{ fontSize: 10, fill: '#6b7280' }} axisLine={{ stroke: '#e5e7eb' }} tickLine={false} />
+            <YAxis tick={{ fontSize: 10, fill: '#6b7280' }} axisLine={{ stroke: '#e5e7eb' }} tickLine={false} />
+            <Tooltip
+              contentStyle={{
+                backgroundColor: '#ffffff',
+                border: '1px solid #e5e7eb',
+                borderRadius: '0.75rem',
+                fontSize: '12px',
+                color: '#1f2937',
+                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
+              }}
+              itemStyle={{ color: '#1f2937' }}
+              cursor={{ fill: 'rgba(0,0,0,0.05)' }}
+            />
+            <Bar dataKey="value" radius={[4, 4, 0, 0]}>
+              {chartData.map((entry, index) => (
+                <Cell key={`cell-${index}`} fill={entry.fill} />
+              ))}
+            </Bar>
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
     </div>
   );
 };

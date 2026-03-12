@@ -2,33 +2,24 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-# Install system dependencies for Python packages
-RUN apt-get update && apt-get install -y --no-install-recommends \
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
     gcc \
+    g++ \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy requirements first for Docker cache
+# Copy requirements and install Python dependencies
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt \
-    && pip install --no-cache-dir gunicorn
+RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy application code
 COPY . .
 
-# Create non-root user
-RUN useradd --create-home appuser
-USER appuser
+# Create instance directory for SQLite
+RUN mkdir -p instance
 
-# Cloud Run uses PORT env var (default 8080)
-ENV PORT=8080
+# Expose port
+EXPOSE 8000
 
-EXPOSE ${PORT}
-
-# Use gunicorn with uvicorn workers for production
-CMD exec gunicorn main:app \
-    --bind 0.0.0.0:${PORT} \
-    --worker-class uvicorn.workers.UvicornWorker \
-    --workers 2 \
-    --timeout 120 \
-    --access-logfile - \
-    --error-logfile -
+# Run the application using gunicorn for production Flask deployment
+CMD ["gunicorn", "--bind", "0.0.0.0:8000", "--workers", "1", "--threads", "8", "--timeout", "0", "main:app"]

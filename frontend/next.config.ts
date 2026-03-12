@@ -1,15 +1,15 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // Static HTML export — no Node.js server needed
-  output: "export",
+  // For Docker deployment, use standalone output
+  output: process.env.DOCKER_BUILD === "true" ? "standalone" : "export",
 
-  // Clean URLs on static hosting (e.g., /dashboard/ instead of /dashboard)
+  // Clean URLs on static hosting
   trailingSlash: true,
 
-  // Required for static export — skip server-side image optimization
+  // Image optimization
   images: {
-    unoptimized: true,
+    unoptimized: process.env.DOCKER_BUILD !== "true",
   },
 
   // React compiler for performance

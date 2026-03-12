@@ -249,7 +249,7 @@ export default function GraphPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#f7faf9] flex items-center justify-center">
+      <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#005b52] mx-auto"></div>
           <p className="mt-4 text-[#005b52]/70">Loading graph...</p>
@@ -260,7 +260,7 @@ export default function GraphPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-[#f7faf9] flex items-center justify-center">
+      <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center">
           <p className="text-red-500">Error: {error}</p>
         </div>
@@ -270,7 +270,7 @@ export default function GraphPage() {
 
   if (!data || data.nodes.length === 0) {
     return (
-      <div className="min-h-screen bg-[#f7faf9] flex items-center justify-center">
+      <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center">
           <p className="text-[#005b52]/70">No graph data available</p>
         </div>
@@ -279,7 +279,7 @@ export default function GraphPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#f7faf9]">
+    <div className="min-h-screen bg-white">
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-6 flex justify-between items-start">
@@ -402,7 +402,7 @@ export default function GraphPage() {
         {/* Tooltip */}
         {hoveredNode && (
           <div
-            className="fixed bg-[#04221f] text-[#f7faf9] border border-[#dbf226]/20 px-4 py-3 rounded-lg shadow-2xl z-50 pointer-events-none"
+            className="fixed bg-white text-gray-800 border border-gray-200 px-4 py-3 rounded-lg shadow-lg z-50 pointer-events-none"
             style={{
               left: `${mousePosition.x + 15}px`,
               top: `${mousePosition.y + 15}px`,
@@ -412,17 +412,17 @@ export default function GraphPage() {
             <div className="space-y-1">
               {hoveredNode.label === 'Taxpayer' && (
                 <>
-                  <div className="font-semibold text-sm text-[#dbf226]">
+                  <div className="font-semibold text-sm text-[#04221f]">
                     {hoveredNode.name || hoveredNode.id}
                   </div>
-                  <div className="text-xs text-white/70">
+                  <div className="text-xs text-gray-500">
                     GSTIN: {hoveredNode.id}
                   </div>
                   {hoveredNode.risk_level && (
                     <div className="text-xs">
-                      Risk: <span className={`font-medium ${hoveredNode.risk_level === 'HIGH_RISK' ? 'text-red-400' :
-                        hoveredNode.risk_level === 'MEDIUM_RISK' ? 'text-yellow-400' :
-                          'text-green-400'
+                      Risk: <span className={`font-medium ${hoveredNode.risk_level === 'HIGH_RISK' ? 'text-red-600' :
+                        hoveredNode.risk_level === 'MEDIUM_RISK' ? 'text-yellow-600' :
+                          'text-green-600'
                         }`}>
                         {hoveredNode.risk_level.replace('_', ' ')}
                       </span>
@@ -437,8 +437,8 @@ export default function GraphPage() {
               )}
               {hoveredNode.label === 'Invoice' && (
                 <>
-                  <div className="font-semibold text-sm text-[#dbf226]">Invoice</div>
-                  <div className="text-xs text-white/70">
+                  <div className="font-semibold text-sm text-[#04221f]">Invoice</div>
+                  <div className="text-xs text-gray-500">
                     ID: {hoveredNode.id}
                   </div>
                   {hoveredNode.value && (
@@ -447,7 +447,7 @@ export default function GraphPage() {
                     </div>
                   )}
                   {hoveredNode.date && (
-                    <div className="text-xs text-white/70">
+                    <div className="text-xs text-gray-500">
                       Date: {hoveredNode.date}
                     </div>
                   )}
@@ -460,8 +460,8 @@ export default function GraphPage() {
               )}
               {hoveredNode.label === 'EwayBill' && (
                 <>
-                  <div className="font-semibold text-sm text-[#dbf226]">E-Way Bill</div>
-                  <div className="text-xs text-white/70">
+                  <div className="font-semibold text-sm text-[#04221f]">E-Way Bill</div>
+                  <div className="text-xs text-gray-500">
                     ID: {hoveredNode.id}
                   </div>
                 </>

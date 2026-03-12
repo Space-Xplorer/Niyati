@@ -22,13 +22,13 @@ export const VendorRiskTable: React.FC<VendorRiskTableProps> = ({ vendors }) => 
   const getRiskBadgeColor = (level: string) => {
     switch (level) {
       case 'HIGH_RISK':
-        return 'bg-red-100 text-red-800';
+        return 'bg-red-500/20 text-red-400 border border-red-500/30 shadow-[0_0_10px_rgba(239,68,68,0.2)]';
       case 'MEDIUM_RISK':
-        return 'bg-yellow-100 text-yellow-800';
+        return 'bg-amber-500/20 text-amber-400 border border-amber-500/30 shadow-[0_0_10px_rgba(245,158,11,0.2)]';
       case 'LOW_RISK':
-        return 'bg-green-100 text-green-800';
+        return 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 shadow-[0_0_10px_rgba(16,185,129,0.2)]';
       default:
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-gray-50 text-gray-700 border border-gray-200';
     }
   };
 
@@ -86,37 +86,40 @@ export const VendorRiskTable: React.FC<VendorRiskTableProps> = ({ vendors }) => 
 
   if (!vendors || vendors.length === 0) {
     return (
-      <div className="bg-white rounded-2xl shadow-xl shadow-black/5 border border-[#005b52]/10 p-6">
-        <h2 className="text-lg font-semibold text-[#04221f] mb-4">Vendor Risk Analysis</h2>
-        <p className="text-[#005b52]/70 text-sm">No vendor risk data available</p>
+      <div className="bg-[#f7faf9] border border-[#005b52]/10 rounded-3xl shadow-xl p-8">
+        <h2 className="text-xl font-bold text-[#04221f] tracking-wide mb-4">Vendor Risk Analysis</h2>
+        <p className="text-[#005b52]/60 text-sm">No vendor risk data available</p>
       </div>
     );
   }
 
   return (
     <>
-      <div className="bg-white rounded-2xl shadow-xl shadow-black/5 border border-[#005b52]/10 overflow-hidden">
-        <div className="px-6 py-4 border-b border-[#005b52]/5">
-          <h2 className="text-lg font-semibold text-[#04221f]">Vendor Risk Analysis</h2>
-          <p className="text-sm text-[#005b52]/70 mt-1">Click on a row to view detailed risk narrative</p>
+      <div className="bg-[#f7faf9] border border-[#005b52]/10 rounded-3xl shadow-xl overflow-hidden">
+        <div className="px-8 py-6 border-b border-[#005b52]/10 flex items-center gap-3 bg-white">
+          <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-xl shadow-sm border border-[#005b52]/5">📋</div>
+          <div>
+            <h2 className="text-xl font-bold text-[#04221f] tracking-wide">Vendor Risk Analysis</h2>
+            <p className="text-sm font-medium text-[#005b52]/60 mt-1">Click on a row to view detailed AI risk narrative</p>
+          </div>
         </div>
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
+          <table className="min-w-full divide-y divide-[#005b52]/10">
             <thead className="bg-[#f7faf9]">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-[#005b52]/80 uppercase tracking-wider">
+                <th className="px-8 py-4 text-left text-xs font-bold text-[#005b52]/60 uppercase tracking-widest whitespace-nowrap">
                   Vendor GSTIN
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-[#005b52]/80 uppercase tracking-wider">
+                <th className="px-8 py-4 text-left text-xs font-bold text-[#005b52]/60 uppercase tracking-widest whitespace-nowrap">
                   Vendor Name
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-[#005b52]/80 uppercase tracking-wider">
+                <th className="px-8 py-4 text-left text-xs font-bold text-[#005b52]/60 uppercase tracking-widest whitespace-nowrap">
                   Risk Level
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-[#005b52]/80 uppercase tracking-wider">
+                <th className="px-8 py-4 text-left text-xs font-bold text-[#005b52]/60 uppercase tracking-widest whitespace-nowrap">
                   ITC at Risk
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-[#005b52]/80 uppercase tracking-wider">
+                <th className="px-8 py-4 text-left text-xs font-bold text-[#005b52]/60 uppercase tracking-widest whitespace-nowrap">
                   Last Transaction
                 </th>
               </tr>
@@ -126,23 +129,23 @@ export const VendorRiskTable: React.FC<VendorRiskTableProps> = ({ vendors }) => 
                 <tr
                   key={index}
                   onClick={() => handleRowClick(vendor)}
-                  className="hover:bg-[#005b52]/5 cursor-pointer transition-colors"
+                  className="hover:bg-[#f7faf9] cursor-pointer transition-colors group"
                 >
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-[#04221f]">
+                  <td className="px-8 py-5 whitespace-nowrap text-sm font-mono font-medium text-[#04221f]">
                     {vendor.vendor_gstin}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-[#04221f]">
+                  <td className="px-8 py-5 whitespace-nowrap text-sm font-medium text-[#04221f]">
                     {vendor.vendor_name}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getRiskBadgeColor(vendor.risk_level)}`}>
+                  <td className="px-8 py-5 whitespace-nowrap">
+                    <span className={`inline-flex px-3 py-1 text-xs font-bold uppercase tracking-wider rounded-full ${getRiskBadgeColor(vendor.risk_level)}`}>
                       {formatRiskLevel(vendor.risk_level)}
                     </span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-[#04221f]">
+                  <td className="px-8 py-5 whitespace-nowrap text-sm font-mono font-medium text-[#04221f]">
                     {formatCurrency(vendor.itc_at_risk)}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-[#04221f]/70">
+                  <td className="px-8 py-5 whitespace-nowrap text-sm font-medium text-[#005b52]/60">
                     {formatDate(vendor.last_transaction_date)}
                   </td>
                 </tr>
@@ -154,41 +157,51 @@ export const VendorRiskTable: React.FC<VendorRiskTableProps> = ({ vendors }) => 
 
       {/* Modal */}
       {selectedVendor && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[80vh] overflow-hidden">
-            <div className="px-6 py-4 border-b border-[#005b52]/10 flex items-center justify-between">
+        <div className="fixed inset-0 bg-[#04221f]/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white border border-[#005b52]/20 rounded-3xl shadow-2xl max-w-3xl w-full max-h-[85vh] flex flex-col overflow-hidden relative">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-[#005b52]/5 rounded-full blur-[100px] opacity-10 pointer-events-none"></div>
+
+            <div className="px-8 py-6 border-b border-[#005b52]/10 flex items-center justify-between bg-[#f7faf9] relative z-10">
               <div>
-                <h3 className="text-lg font-semibold text-[#04221f]">Risk Narrative</h3>
-                <p className="text-sm text-[#005b52]/70 mt-1">
-                  {selectedVendor.vendor_name} ({selectedVendor.vendor_gstin})
+                <h3 className="text-2xl font-bold text-[#04221f] tracking-tight flex items-center gap-3">
+                  <span className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-sm shadow-sm">🤖</span>
+                  Niyati Explainer AI
+                </h3>
+                <p className="text-sm font-medium text-[#005b52]/60 mt-2 flex items-center gap-2">
+                  Analyzing: <span className="font-bold text-[#04221f]">{selectedVendor.vendor_name}</span>
+                  <span className="font-mono bg-white px-2 py-0.5 rounded text-[#04221f] border border-[#005b52]/10">{selectedVendor.vendor_gstin}</span>
                 </p>
               </div>
               <button
                 onClick={closeModal}
-                className="text-[#005b52]/50 hover:text-[#04221f] transition-colors"
+                className="w-10 h-10 rounded-full bg-white hover:bg-gray-50 border border-[#005b52]/10 flex items-center justify-center text-gray-500 hover:text-gray-700 transition-colors shadow-sm"
+                title="Close"
               >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
             </div>
-            <div className="px-6 py-4 overflow-y-auto max-h-[60vh]">
+            <div className="px-8 py-6 overflow-y-auto flex-1 relative z-10">
               {loadingNarrative ? (
-                <div className="flex items-center justify-center py-8">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#005b52]"></div>
+                <div className="flex flex-col items-center justify-center py-16 gap-4">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#005b52]"></div>
+                  <p className="text-[#005b52]/80 font-mono text-sm animate-pulse tracking-widest">GENERATING NARRATIVE...</p>
                 </div>
               ) : (
-                <div className="prose prose-sm max-w-none">
-                  <p className="text-[#04221f] whitespace-pre-wrap">{narrative}</p>
+                <div className="prose prose-sm max-w-none text-[#04221f]">
+                  <pre className="text-[#04221f] whitespace-pre-wrap font-mono leading-relaxed bg-[#f7faf9] p-6 rounded-2xl border border-[#005b52]/10 shadow-sm">
+                    {narrative}
+                  </pre>
                 </div>
               )}
             </div>
-            <div className="px-6 py-4 border-t border-[#005b52]/10 flex justify-end">
+            <div className="px-8 py-5 border-t border-[#005b52]/10 flex justify-end bg-[#f7faf9] relative z-10">
               <button
                 onClick={closeModal}
-                className="px-4 py-2 bg-[#005b52] text-[#dbf226] rounded-lg hover:bg-[#04221f] transition-colors shadow-md"
+                className="px-6 py-2.5 bg-[#005b52] text-white rounded-full font-bold hover:bg-[#04221f] transition-colors shadow-md"
               >
-                Close
+                Acknowledge
               </button>
             </div>
           </div>

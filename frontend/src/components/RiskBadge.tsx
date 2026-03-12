@@ -11,13 +11,13 @@ export const RiskBadge: React.FC<RiskBadgeProps> = ({ level, probability }) => {
   const getBadgeStyles = (level: string) => {
     switch (level) {
       case 'HIGH_RISK':
-        return 'bg-red-100 text-red-800 border-red-300';
+        return 'bg-red-50 text-red-700 border-red-200 shadow-sm';
       case 'MEDIUM_RISK':
-        return 'bg-yellow-100 text-yellow-800 border-yellow-300';
+        return 'bg-amber-50 text-amber-700 border-amber-200 shadow-sm';
       case 'LOW_RISK':
-        return 'bg-green-100 text-green-800 border-green-300';
+        return 'bg-emerald-50 text-emerald-700 border-emerald-200 shadow-sm';
       default:
-        return 'bg-gray-100 text-gray-800 border-gray-300';
+        return 'bg-gray-50 text-gray-700 border-gray-200 shadow-sm';
     }
   };
 
@@ -36,11 +36,11 @@ export const RiskBadge: React.FC<RiskBadgeProps> = ({ level, probability }) => {
 
   return (
     <div className="flex flex-col items-center">
-      <div className={`inline-flex items-center px-6 py-3 rounded-full border-2 ${getBadgeStyles(level)}`}>
-        <span className="text-2xl font-bold">{getLabel(level)}</span>
+      <div className={`inline-flex items-center px-8 py-4 rounded-2xl border backdrop-blur-sm transition-all ${getBadgeStyles(level)}`}>
+        <span className="text-3xl font-bold tracking-tight">{getLabel(level)}</span>
       </div>
-      <p className="mt-4 text-sm text-gray-600">
-        Risk Probability: <span className="font-semibold">{(probability * 100).toFixed(1)}%</span>
+      <p className="mt-5 text-sm font-medium text-[#005b52]/70">
+        Risk Probability Prediction: <span className="font-mono text-[#04221f] font-bold text-base ml-1">{(probability * 100).toFixed(1)}%</span>
       </p>
     </div>
   );

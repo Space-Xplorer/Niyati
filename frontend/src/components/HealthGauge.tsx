@@ -9,12 +9,12 @@ interface HealthGaugeProps {
 export const HealthGauge: React.FC<HealthGaugeProps> = ({ score }) => {
   // Clamp score between 0 and 100
   const clampedScore = Math.max(0, Math.min(100, score));
-  
+
   // Calculate color based on score
   const getColor = (score: number) => {
-    if (score >= 70) return '#10b981'; // green
-    if (score >= 40) return '#f59e0b'; // yellow
-    return '#ef4444'; // red
+    if (score >= 70) return '#34d399'; // emerald-400
+    if (score >= 40) return '#fbbf24'; // amber-400
+    return '#f87171'; // red-400
   };
 
   const color = getColor(clampedScore);
@@ -50,16 +50,16 @@ export const HealthGauge: React.FC<HealthGaugeProps> = ({ score }) => {
         </svg>
         {/* Score text */}
         <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <span className="text-4xl font-bold" style={{ color }}>
+          <span className="text-5xl font-bold tracking-tight text-[#04221f]">
             {Math.round(clampedScore)}
           </span>
-          <span className="text-sm text-gray-600">out of 100</span>
+          <span className="text-xs font-medium uppercase tracking-widest text-[#005b52]/60 mt-1">out of 100</span>
         </div>
       </div>
-      <p className="mt-4 text-sm text-gray-600 text-center">
-        {clampedScore >= 70 && 'Excellent health - Low fraud risk'}
-        {clampedScore >= 40 && clampedScore < 70 && 'Moderate health - Medium fraud risk'}
-        {clampedScore < 40 && 'Poor health - High fraud risk'}
+      <p className="mt-4 text-sm font-medium text-[#005b52]/80 text-center max-w-[200px] leading-relaxed">
+        {clampedScore >= 70 && 'Excellent health — Low fraud risk'}
+        {clampedScore >= 40 && clampedScore < 70 && 'Moderate health — Medium fraud risk'}
+        {clampedScore < 40 && 'Poor health — High fraud risk'}
       </p>
     </div>
   );
