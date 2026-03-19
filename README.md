@@ -331,7 +331,7 @@ This project is licensed under the **MIT License** - see [LICENSE](LICENSE) file
 
 **Niyati** was created as an innovative solution for the **GST Compliance Hackathon**, demonstrating advanced AI/ML capabilities for tax authority risk management and enterprise compliance.
 
-**Development Team**: Patnala Maheshwar and collaborators
+**Development Team**: Patnala Maheshwar and Spoorthy Boga
 
 **Technologies**: Python, React, Neo4j, LangGraph, Machine Learning
 
@@ -341,9 +341,7 @@ This project is licensed under the **MIT License** - see [LICENSE](LICENSE) file
 
 For issues, feature requests, or inquiries:
 - **Issues**: Create a GitHub issue with detailed description
-- **Email**: [support email]
-- **Documentation**: Check [docs/](docs/) folder
-- **Wiki**: Community knowledge base
+- **Email**: maheshwarpatn@gmail.com
 
 ---
 

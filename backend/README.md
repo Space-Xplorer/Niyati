@@ -673,7 +673,7 @@ MIT License - See root [LICENSE](../LICENSE) file
 
 ## 🎓 Hackathon Context
 
-Niyati was developed as an innovative solution for the **GST Compliance & Risk Intelligence Hackathon**, showcasing advanced applications of:
+Niyati was developed as an innovative solution for the **GST Compliance & Risk Intelligence Hackathon** by Patnala Maheshwar and Spoorthy Boga, showcasing advanced applications of:
 - Multi-agent AI orchestration with LangGraph
 - Explainable machine learning for regulatory compliance
 - Knowledge graphs for relationship discovery

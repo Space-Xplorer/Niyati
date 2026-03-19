@@ -806,7 +806,7 @@ export default async function Page() {
 
 ## 🎓 Hackathon Context
 
-Niyati frontend was developed as part of the **GST Compliance & Risk Intelligence Hackathon**, showcasing:
+Niyati frontend was developed as part of the **GST Compliance & Risk Intelligence Hackathon** by Patnala Maheshwar and Spoorthy Boga, showcasing:
 - Modern web technologies (React 19, Next.js 16)
 - Enterprise-grade UI/UX design
 - Real-time data visualization
